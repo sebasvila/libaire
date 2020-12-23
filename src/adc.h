@@ -2,36 +2,8 @@
 #define _ADC_H_
 
 /**
- * \addtogroup adc
  * \file adc.h
- *
  * \brief Abstracts the AVR analogic to digital peripheral.
- *
- * From this module standpoint, the AVR ADC services are based on:
- *  -# A set of physical analogic channels attached to physical pins 
- *     (some of them shared with digital ports); 
- *  -# A set of reference sources that are used to
- *     compare with the analogic signals beig converted.
- *  -# A hardware that reads a physical channel, compares
- *     its value to a reference source and returns the corresponding
- *     digital value.
- *
- * The center of this module is the #sdc_channel. An #sdc_channel is
- * a logical file-like object that abstracts a physical analogic
- * channel together with its reference source.
- * 
- * The functions of this module are operations on the #sdc_channel. A
- * typical use would follow this pattern:
- *
- *  -# Bind the logical channel to a physical channel and a reference
- *     source.
- *  -# Prepare the logical channel to be sampled.
- *  -# Request a sampling action to the channel.
- *  -# When sampled: get the value.
- *  -# Unbound the channel.
- *
- * Some functions are canned combinations of basic operations to allow
- * an easier use on simple cases.
  */
 
 #include <stdint.h>
@@ -68,14 +40,6 @@
 ///@}
 
 
-/**
- * \name Reference voltage sources
- *
- * Reference sources are the reference voltage that is used to
- * during the adc conversion. Every physical channel is associated to
- * a reference source when the logical channel is bound. 
- */
-///@{
 /** 
  * @brief A reference voltage source.
  * 
@@ -87,8 +51,6 @@ typedef enum {
   Vcc=1,   /**< Use device Vcc as reference */
   Int11=3  /**< Use internal 1.1V source as reference */
 } adc_ref;
-///@}
-
 
 
 /**
@@ -138,6 +100,7 @@ void adc_unbind(adc_channel *const ch);
  *  @param ch The bound logical channel to be prepared.
  */
 void adc_prepare(adc_channel ch);
+
 
 /*! start to read from last prepared channel */
 void adc_start_conversion(void);
