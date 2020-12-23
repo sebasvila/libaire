@@ -2,10 +2,9 @@
 #include <stdbool.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
+#include <util/delay.h>
 #include "switch.h"
 
-#include "shielditic.h"
-#include <util/delay.h> 
 
 /* max allowed number of switches */
 #define MAX_SWITCH 8

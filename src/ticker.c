@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 #include "ticker.h"
 
 /* Implemented on the 8.bit TIMER2 */

@@ -9,32 +9,31 @@ CC=avr-gcc
 CPPFLAGS=
 CFLAGS=-Wall -std=gnu99 -Os -fshort-enums
 LDFLAGS=-std=c99
+AR=avr-ar
 
 #################################################################
 
-SRC_MODS = adc motor shielditic ticker vaction \
-           pin switch timer alert queue serial \
-	   i2cq i2c
+SRC_LIB = libaire.a
+
+SRC_MODS = adc ticker pin switch timer alert queue serial \
+	   #i2cq i2c
 
 SRC_TESTS = test_timer test_timer2 \
             test_pin \
             test_ticker \
 	    test_adc test_adc_2 \
             test_switch_1 test_switch_2 test_switch_3 \
-            test_lcd \
             test_alert_1 \
 	    test_serial_1 test_serial_2 test_serial_3 test_serial_4 \
             test_serial_5
 
-SRC_MAIN = main
-
+# Library deps
+$(SRC_LIB): $(SRC_LIB)($(addsuffix .o, $(SRC_MODS)))
 
 # Link rules
 
-main: vaction.o timer.o motor.o
 test_adc: adc.o ticker.o shielditic.o alert.o pin.o
 test_adc_2: adc.o ticker.o shielditic.o alert.o pin.o
-test_lcd: lcd.o
 test_ticker: ticker.o shielditic.o
 test_timer: pin.o timer.o
 test_timer2: pin.o timer.o
@@ -90,7 +89,7 @@ BUILDDIR = .
 
 # Sets of files
 
-SOURCES = $(SRC_MODS) $(SRC_TESTS) $(SRC_MAIN)
+SOURCES = $(SRC_MODS) $(SRC_TESTS)
 DEPFILES = $(addprefix $(DEPSDIR)/, $(addsuffix .d, $(SOURCES)))
 
 # Search path
@@ -101,7 +100,7 @@ VPATH = $(SRCDIR):$(TESTDIR)
 # Default targets
 
 .PHONY: all tests
-all:	$(SRC_MAIN)
+all:	$(SRC_LIB)
 tests:  $(SRC_TESTS)
 
 
@@ -112,7 +111,7 @@ clean:
 	@\rm -f *~ *.o *.s *.hex
 
 veryclean: clean
-	@\rm -f  \#*\# $(SRC_MAIN) $(SRC_TESTS)
+	@\rm -f  \#*\# $(SRC_LIB) $(SRC_TESTS)
 	@\rm -rf $(DEPSDIR)
 
 
