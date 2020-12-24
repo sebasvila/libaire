@@ -7,13 +7,15 @@ Welcome to libaire's documentation!
 ===================================
 
 .. toctree::
+   :numbered:
    :maxdepth: 2
    :caption: Contents
-
 	     
    intro
    adc
-	     
+
+
+Pepito
 
 Indices and tables
 ==================

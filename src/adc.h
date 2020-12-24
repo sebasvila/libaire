@@ -64,7 +64,7 @@ typedef uint8_t adc_channel;
 
 
 /**
- * \brief Binds the channel to a given port and reference voltage source. 
+ * @brief Binds the channel to a given port and reference voltage source. 
  *
  * This function has an 'open'-like semantics. It should be called
  * before any other operations on the channel object. It binds the
@@ -72,13 +72,13 @@ typedef uint8_t adc_channel;
  * digital port is in use that overlaps the same pin that this analog
  * port, the digital port is disabled.
  *
- * \throws ALRT_INCOMPATIBLE_ADC_REF If any incompatibility arises
+ * @throws ALRT_INCOMPATIBLE_ADC_REF If any incompatibility arises
  * between reference sources of the currently bound adc channels.
  *
- * \param[in] ch: Analog port number.
- * \param[in] ref: Reference voltage source for this channel.
+ * @param ch: Analog port number.
+ * @param ref: Reference voltage source for this channel.
  *
- * \return An bound ::adc_channel
+ * @return An bound ::adc_channel
  */
 adc_channel adc_bind(uint8_t ch, adc_ref ref);
 
@@ -102,23 +102,49 @@ void adc_unbind(adc_channel *const ch);
 void adc_prepare(adc_channel ch);
 
 
-/*! start to read from last prepared channel */
+/**
+ * @brief Starts a sampling on the last prepared channel 
+ */
 void adc_start_conversion(void);
 
-/*! prepare to convert from channel `ch` and start a conversion */
-void adc_prepare_start(adc_channel ch);
-
-/*! true iff last started conversion is running */
+/**
+ * @brief True iff the last started conversion is still running 
+ *
+ */
 bool adc_converting(void);
 
-/*! get the value of the last started conversion */
+/**
+ * @brief Gets the value of the last started conversion
+ * 
+ * Can only be applyed after conversion ended. Refer to
+ * adc_converting() to test this condition.
+ *
+ * @returns A value in range [0..::ADC_MAX]
+ */
 uint8_t adc_get(void);
 
 
 
-/*! read from adc channel `ac` until read done.  Typically about 30us
- * of waiting time. Longuer waiting time if it needs to change
+/**
+ * @brief Prepare to convert from a channel and starts a conversion 
+ *
+ * An utility function that first calls adc_prepare() and 
+ * then adc_start_conversion().
+ * 
+ * @param ch : The adc_channel to be prepared
+ */
+void adc_prepare_start(adc_channel ch);
+
+/**
+ * @brief Prepares, starts and reads a channel
+ *
+ * An utility function that prepares a channel, starts a conversion, and, 
+ * when ready, reads the sampled value.  Typically lasts around of 30us
+ * of waiting time. It may spand a longuer waiting time if it needs to change
  * physical channel and/or reference voltage from last conversion.
+ *
+ * @param ch: The logical channel to be sampled
+ * @returns A sampled value in range [0..::ADC_MAX]
  */
 uint8_t adc_prep_start_get(adc_channel ch);
 

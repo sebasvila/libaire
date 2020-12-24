@@ -1,8 +1,9 @@
+**************
 The adc module
-==============
+**************
 
 Introduction
-------------
+============
 
 The module adc contains an abstract interface to the AVR
 analogic-to-digital conversion hardware.
@@ -46,13 +47,13 @@ Some functions are canned combinations of basic operations.
 
 
 Module API
-----------
+==========
 
 
-The sampling range
-++++++++++++++++++
+Sampled values range
+--------------------
 
-The sampling vaules obtained are always defined between zero and this
+The sampling values obtained are always defined between zero and this
 constant:
 
 .. doxygendefine:: ADC_MAX
@@ -63,8 +64,8 @@ value obtained to a given range:
 .. doxygendefine:: ADC_VALUE
 
 
-The reference sources
-+++++++++++++++++++++
+Reference sources
+-----------------
 
 A logical channel is bound to a specific reference source. The signal
 of this logical channel will be compared to the channel reference
@@ -79,14 +80,30 @@ enforce this constraint.
 .. doxygenenum:: adc_ref
 		   
 
-The basic operations
-++++++++++++++++++++
+Basic operations
+----------------
 
 .. doxygenfunction:: adc_bind
+.. doxygenfunction:: adc_unbind
+.. doxygenfunction:: adc_prepare
+.. doxygenfunction:: adc_start_conversion
+.. doxygenfunction:: adc_converting
+.. doxygenfunction:: adc_get
+		     
+Canned operations
+-----------------
 
+These are utility functions that include several basic operations on a
+single channel frequently used together. The aim is to simplify the
+usage of this module on simple cases.
+
+.. doxygenfunction:: adc_prepare_start
+
+.. doxygenfunction:: adc_prep_start_get
+   
 
 Examples
---------
+========
 
 A basic example working with a single channel. We sample four times
 the channel.
@@ -117,7 +134,7 @@ the channel.
 In the following example, we practice round robin sampling on two
 channels. Note how the slow `put()` operation is executed while
 waiting for the next conversion done. This allows for a faster
-sampling rate.
+sampling rate. The example uses canned operations when possible.
 
 .. code-block:: c
 
@@ -131,18 +148,13 @@ sampling rate.
      c1 = adc_bind(3, Int11);
      c2 = adc_bind(4, Int11);
      /* do sampling */
-     adc_prepare(c2);
-     adc_start_conversion();
-     while (adc_converting());
-     s2 = adc_get();       
+     s2 = adc_prepare_start_get(c2);
      for(;;) {
-       adc_prepare(c1);
-       adc_start_conversion();
+       adc_prepare_start(c1);
        put(s2);
        while (adc_converting());
        s1 = adc_get();
-       adc_prepare(c2);
-       adc_start_conversion();
+       adc_prepare_start(c2);
        put(s1);
        while (adc_converting());
        s2 = adc_get();       
