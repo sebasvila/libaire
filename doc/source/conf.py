@@ -57,6 +57,9 @@ html_static_path = ['_static']
 
 
 
+# enforce master_doc to cope with old versions
+master_doc = 'index'
+
 breathe_projects = { "libaire": "../doxyxml/" }
 breathe_default_project = "libaire"
 breathe_domain_by_extension = {
