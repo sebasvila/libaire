@@ -32,6 +32,8 @@ release = '1.0'
 # ones.
 extensions = [
     'breathe',
+    'sphinx.ext.mathjax',
+    'sphinxcontrib.plantuml',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

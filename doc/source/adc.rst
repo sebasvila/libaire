@@ -34,8 +34,40 @@ logical file-like object that abstracts a physical analogic channel
 together with its reference source.
 
 The functions of this module are operations on the adc_channel. A
-basic use would follow this pattern:
+basic use to sample N times a single channel would follow this
+pattern:
 
+.. uml::
+
+   participant User
+   participant adc
+   participant adc_channel
+
+   User ->  adc             : bind
+   User <-- adc             : adc_channel
+
+   User -> adc_channel ++      : prepare
+   User <-- adc_channel
+
+   loop for each sample
+      User -> adc_channel   : start_conversion
+      activate adc_channel
+      User <-- adc_channel
+
+      loop while true
+         User -> adc_channel   : converting
+	 User <-- adc_channel  : true or false
+      end
+
+      deactivate adc_channel
+      User ->  adc_channel --  : get sample
+      User <-- adc_channel     : sampled value
+   end
+
+   User ->  adc_channel !!  : unbind
+
+
+   
 1. Bind the logical channel to a physical channel and to a reference
    source.
 2. Prepare the logical channel to be sampled.
@@ -105,6 +137,10 @@ usage of this module on simple cases.
 Examples
 ========
 
+Example 1
+---------
+
+
 A basic example working with a single channel. We sample four times
 the channel.
 
@@ -131,10 +167,72 @@ the channel.
      return 0;
    }
 
+
+
+
+   
+Example 2
+---------
+
 In the following example, we practice round robin sampling on two
 channels. Note how the slow `put()` operation is executed while
 waiting for the next conversion done. This allows for a faster
 sampling rate. The example uses canned operations when possible.
+
+The time diagram of the central part of the algorithm is as follows:
+
+.. uml::
+   :scale: 70%
+	   
+   concise "analog signal 2" as s2
+   concise "adc channel 2" as adc2
+   concise "analog signal 1" as s1
+   concise "adc channel 1" as adc1
+   concise "main program" as main
+
+   hide time-axis
+
+   main is Run
+
+   @0
+   
+   @10
+   main -> adc1 : "prepare and start"
+   adc1 is Prepare
+   main is "Processing last s2 sample"
+   
+   @+6
+   adc1 -> s1 : "sample"
+   adc1 is Converting
+
+   @18
+   main is Run
+
+   @20
+   adc1 -> main : "sample value"
+   adc1 is {hidden}
+
+   @30
+   main -> adc2 : "prepare and start"
+   adc2 is Prepare
+   main is "Processing last s1 sample"   
+   
+   @+6
+   adc2 -> s2 : "sample"
+   adc2 is Converting
+
+   @38
+   main is Run
+   
+   @40
+   adc2 -> main : "sample value"
+   adc2 is {hidden}
+   
+   highlight 8 to 22  #yellow:"Sampling channel 1"
+   highlight 28 to 42 #yellow:"Sampling channel 2"
+
+   @45
+
 
 .. code-block:: c
 
