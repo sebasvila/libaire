@@ -124,12 +124,52 @@ static i2cr_request_t current_req; // could it be a pointer?
 
 
 
-/* Hw utility functions */
-static void disable_i2c_interrupts(void) {}
-static void enable_i2c_interrupts(void) {}
-static void throw_start(void) {}
-static void throw_stop(void) {}
-static void throw_byte(uint8_t b) {}
+/************************
+ * Hw utility functions *
+ ************************/
+
+/**
+ * @brief Disable I2C interrupts.
+ */
+static void disable_i2c_interrupts(void) {
+  TWCR &= ~(1<<TWIE);   //Clears the TWI interrupt enable bit
+}
+
+/**
+ * @brief Enable I2C interrupts. Global interrupts must be previously set.
+ */
+static void enable_i2c_interrupts(void) {
+  TWCR |= (1<<TWIE);    //Sets the TWI interrupt enable bit
+}
+
+/**
+ * @brief Send a start condition to the I2C bus as a Master.
+ */
+static void throw_start(void) {
+  TWCR = (1<<TWINT)  |  //Clears the flag
+         (1<<TWEN)   |  //Enable TWI. Hardware takes control over the I/O pins connected to the SCL and SDA pins
+         (1<<TWSTA);    //Generates the START condition. Application desires to be Master on the bus
+}
+
+/**
+ * @brief Send a stop condition to the I2C bus.
+ */
+static void throw_stop(void) {
+  TWCR =  (1<<TWINT) |  //Clears the flag
+          (1<<TWEN)  |  //Enable TWI. Hardware takes control over the I/O pins connected to the SCL and SDA pins
+          (1<<TWSTO);   //Generates the STOP condition.
+}
+
+/**
+ * @brief Send a byte to the I2C bus. It can be either an address or data.
+ * 
+ * @param b The byte to be sent.
+ */
+static void throw_byte(uint8_t b) {
+  TWDR = b;             //Load byte to TWDR data register
+  TWCR =  (1<<TWINT) |  //Clears the flag
+          (1<<TWEN);    //Enable TWI. Hardware takes control over the I/O pins connected to the SCL and SDA pins
+}
 
 
 /*
@@ -250,4 +290,8 @@ static void ida_next(uint8_t e) {
 }
 
 
-	     
+
+ISR(TWI_vect) {
+
+}
+
