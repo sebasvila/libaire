@@ -25,9 +25,9 @@ typedef enum {
 typedef struct {
   i2cr_type_t rt;
   i2cr_addr_t node;
-  uint8_t *const buffer;
+  uint8_t *buffer;
   uint8_t length;
-  volatile i2cr_status_t *const status;
+  volatile i2cr_status_t *status;
 } i2cr_request_t;
 
 

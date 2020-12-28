@@ -3,14 +3,14 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "ticker.h"
-#include "shielditic.h"
+#include "test_fixture.h"
 
 
 int main() {
   uint16_t ticks;
   
   ticker_setup();
-  shielditic_setup();
+  fixture_setup();
   sei();
 
   /* signal start of test */

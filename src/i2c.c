@@ -25,7 +25,7 @@ void i2c_send(i2cr_addr_t node,
 	      const uint8_t *const  buffer,
 	      uint8_t length,
 	      volatile i2cr_status_t *const status) {
-  i2cr_request_t r =
+  const i2cr_request_t r =
     {
      .rt = I2Csend,
      .node = node,

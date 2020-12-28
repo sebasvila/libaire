@@ -30,18 +30,18 @@ SRC_TESTS = test_timer test_timer2 \
 # Library deps
 $(SRC_LIB): $(SRC_LIB)($(addsuffix .o, $(SRC_MODS)))
 
-# Link rules
 
-test_adc: adc.o ticker.o shielditic.o alert.o pin.o
-test_adc_2: adc.o ticker.o shielditic.o alert.o pin.o
-test_ticker: ticker.o shielditic.o
+# Link rules for tests
+test_adc: adc.o ticker.o test_fixture.o alert.o pin.o
+test_adc_2: adc.o ticker.o test_fixture.o alert.o pin.o
+test_ticker: ticker.o test_fixture.o
 test_timer: pin.o timer.o
 test_timer2: pin.o timer.o
 test_pin: pin.o
-test_switch_1: switch.o shielditic.o
-test_switch_2: switch.o shielditic.o
-test_switch_3: switch.o shielditic.o ticker.o
-test_switch_4: switch.o shielditic.o ticker.o adc.o
+test_switch_1: switch.o test_fixture.o
+test_switch_2: switch.o test_fixture.o
+test_switch_3: switch.o test_fixture.o ticker.o
+test_switch_4: switch.o test_fixture.o ticker.o adc.o
 test_alert_1: alert.o pin.o
 test_serial_1: serial.o queue.o
 test_serial_2: serial.o queue.o

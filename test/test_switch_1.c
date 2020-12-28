@@ -1,7 +1,7 @@
 #include <avr/interrupt.h> 
 #include <avr/io.h> 
 #include <util/delay.h>
-#include "shielditic.h"
+#include "test_fixture.h"
 #include "switch.h"
 
 
@@ -9,7 +9,7 @@
 int main() {
   switch_t s1, s2;
   
-  shielditic_setup();
+  fixture_setup();
   switch_setup();
   sei();
 

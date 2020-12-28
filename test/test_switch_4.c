@@ -16,7 +16,7 @@
 #include <util/delay.h>
 #include "pt.h"
 #include "pt-delay.h"
-#include "shielditic.h"
+#include "test_fixture.h"
 #include "adc.h"
 #include "switch.h"
 
@@ -153,7 +153,7 @@ int main(void) {
   /* init modules */
   ticker_setup();
   ticker_start();
-  shielditic_setup();
+  fixture_setup();
   switch_setup();
   adc_setup();
   sei();

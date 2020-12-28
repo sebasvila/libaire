@@ -4,7 +4,7 @@
 #include "pt.h"
 #include "pt-delay.h"
 #include "ticker.h"
-#include "shielditic.h"
+#include "test_fixture.h"
 #include "adc.h"
 #include "config.h"
 
@@ -85,7 +85,7 @@ int main(void) {
   /* init modules */
   ticker_setup();
   ticker_start();
-  shielditic_setup();
+  fixture_setup();
   adc_setup();
   sei();
   
