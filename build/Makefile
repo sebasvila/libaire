@@ -1,7 +1,6 @@
 #################################################################
 
-PLATFORM = ArduinoONE
-SHIELD   = ShieldITIC
+PLATFORM=ArduinoONE
 
 DEVICE=/dev/ttyACM0
 
@@ -68,15 +67,12 @@ else ifeq ($(PLATFORM),ArduinoMEGA)
 endif
 
 
-ifeq ($(SHIELD),ShieldTIC)
-endif
-
 
 # Processing parameters
 
 CFLAGS   +=  -mmcu=$(MCU)
 LDFLAGS  +=  -mmcu=$(MCU)
-CPPFLAGS +=  -D$(PLATFORM) -D$(SHIELD) -DF_CPU=$(FREQ) -I$(SRCDIR)
+CPPFLAGS +=  -D$(PLATFORM) -DF_CPU=$(FREQ) -I$(SRCDIR)
 
 
 # Project structure
@@ -99,8 +95,8 @@ VPATH = $(SRCDIR):$(TESTDIR)
 
 # Default targets
 
-.PHONY: all tests
-all:	$(SRC_LIB)
+.PHONY: lib tests
+lib:	$(SRC_LIB)
 tests:  $(SRC_TESTS)
 
 
