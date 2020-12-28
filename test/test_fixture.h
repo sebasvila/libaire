@@ -8,6 +8,11 @@
  */
 #include <stdbool.h>
 
+
+#define POT_CHANNEL     1
+#define POT_REFERENCE   Vcc
+
+
 typedef enum {red, yellow, green} led_color;
 typedef enum {semaph1, semaph2} led_semaph;
 

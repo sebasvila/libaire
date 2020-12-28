@@ -6,7 +6,6 @@
 #include "ticker.h"
 #include "test_fixture.h"
 #include "adc.h"
-#include "config.h"
 
 static uint16_t offset;
 

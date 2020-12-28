@@ -1,5 +1,6 @@
+************
 Introduction
-============
+************
 
 
 libAire is a bare C library for Arduino that abstracts the main
@@ -27,7 +28,7 @@ These are the most salient reasons:
 
  
 Libaire modules structure
--------------------------
+=========================
 
 Libaire is built as a set of interelated related modules. These are the
 modules and its main functionality.
@@ -72,6 +73,21 @@ timer
    An abstraction of a timer that allows to asyncronously call a
    function in the future.
 
-   
+
+Microcontroller and platform
+============================
+
+Libaire depends mainly on the model of AVR microcontroler because:
+
+* It depends on the actual microcontroler peripheral devices: A/D
+  conversor, GPIO ports, timers, etc.
+
+Libaire (almost) do not depends on the platform hosting a given
+microcontroler. However, as most of users are on Arduino comunity, we
+choosed to make libaire to depend on an Arduino platform. The actual
+Arduino platform also determines the model of AVR microcontroler.
+
+The default platform is Arduino ONE.
+
 
 
