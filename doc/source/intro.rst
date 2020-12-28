@@ -26,7 +26,6 @@ These are the most salient reasons:
    leverage the work that the library user should do.
 
 
- 
 Libaire modules structure
 =========================
 
@@ -41,18 +40,8 @@ alert
    giving to the technical user a primary hint on the cause of
    halt. It's a last resource emergency exception handler.
 
-config
-   Some definitions that allows to write portable code between
-   some platforms.
-
 i2c
    An abstraction of an i2c bus.
-
-lcd
-   An abstraction of an LCD.
-
-motor
-   An abstraction of a stepper motor.
 
 pin
    An abstraction of a digital i/o pin.
@@ -74,20 +63,56 @@ timer
    function in the future.
 
 
-Microcontroller and platform
-============================
 
-Libaire depends mainly on the model of AVR microcontroler because:
+Microcontroller, platform and devices
+=====================================
 
-* It depends on the actual microcontroler peripheral devices: A/D
-  conversor, GPIO ports, timers, etc.
+On this documentation we use the following terms with the defined
+sense:
 
-Libaire (almost) do not depends on the platform hosting a given
-microcontroler. However, as most of users are on Arduino comunity, we
-choosed to make libaire to depend on an Arduino platform. The actual
-Arduino platform also determines the model of AVR microcontroler.
+microcontroller family
+
+   A set of many microcontroler models that share the same or almost
+   the same assembler level architecture. For instance megaAVR.
+
+microcontroller model
+
+   A specific member of a microcontroler family. For instance, the AVR
+   ATMega 328.
+
+platform
+
+   An circuit that surrounds a microcontroller and renders it usable
+   to some tasks. Usually in the form of a printed circuit. For
+   instance Arduino ONE.
+
+device
+
+   An external device connected to a platform that complements its
+   functions. For instance, a specific Arduino shield with relays.
+   
+
+
+Libaire hardware dependencies
+-----------------------------
+
+Libaire depends mainly on the model of AVR microcontroler family
+because of the dependencies on microcontroler peripheral devices: A/D
+conversor, GPIO ports, timers, etc.
+
+However, as most of users are on Arduino comunity, we choosed to make
+libaire to depend on an Arduino platform. The actual Arduino platform
+also determines the model of AVR microcontroler.
 
 The default platform is Arduino ONE.
 
+
+
+Relationship between libaire and libdev
+=======================================
+
+libaire contains the software that is platform dependent.
+
+libdev contains the software that is device dependent.
 
 
