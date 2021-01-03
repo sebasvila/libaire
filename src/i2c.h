@@ -10,6 +10,9 @@
 #include "i2cr.h"
 
 
+#ifndef TWI_FREQ
+#define TWI_FREQ 100000UL
+#endif
 
 
 void i2c_setup(void);
@@ -30,9 +33,9 @@ void i2c_close(void);
  * blocks until this request can be accepted.
  */
 void i2c_send(i2cr_addr_t node,
-	      const uint8_t *const  buffer,
+	      uint8_t *buffer,
 	      uint8_t lenght,
-	      volatile i2cr_status_t *const status);
+	      volatile i2cr_status_t *status);
 
 /*
  * Request the driver to (asyncronously) receive from `node`

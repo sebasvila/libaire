@@ -41,18 +41,18 @@ bool i2cq_is_full(const i2cq_t *const q) {
 }
 
 
-void i2cq_front(const i2cq_t *const q, i2cr_request_t *const r) {
+i2cr_request_t *i2cq_front(i2cq_t *q) {
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    *r = q->t[q->front];
+    return &(q->t[q->front]);
   }
 }
 
 #pragma GCC diagnostic pop
 
-void i2cq_enqueue(i2cq_t *const q, const i2cr_request_t *const v) {
+void i2cq_enqueue(i2cq_t *q, i2cr_request_t v) {
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     if (!i2cq_is_full(q)) {
-      q->t[ q->rear ] = *v;
+      q->t[q->rear] = v;
       q->rear = inc(q->rear);
     }
   }

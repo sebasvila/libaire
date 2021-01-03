@@ -33,7 +33,7 @@ bool i2cq_is_empty(const i2cq_t *const q);
 bool i2cq_is_full(const i2cq_t *const q);
 
 /* Adds `v` to `q`. If `q` is full nothing is added */
-void i2cq_enqueue(i2cq_t *const q, const i2cr_request_t *const v);
+void i2cq_enqueue(i2cq_t *q, i2cr_request_t v);
 
 /* Remove the front element of `q`. 
  * If `q` is empty nothing is removed.
@@ -43,7 +43,7 @@ void i2cq_dequeue(i2cq_t *const q);
 /* Returns `r`, the front of `q`. 
  * If `q` is empty an undefined value is returned.
  */
-void i2cq_front(const i2cq_t *const q, i2cr_request_t *const r);
+i2cr_request_t *i2cq_front(i2cq_t *q);
 
 
 #endif
