@@ -264,8 +264,6 @@ static void ida_next(uint8_t e) {
       } else {
         // No more data to send
         fetch_or_idle(Success);
-        throw_stop();
-        disable_i2c_interrupts();
       }
     } else if (e == TW_MT_DATA_NACK) {
       // Data rejected by slave
