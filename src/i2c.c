@@ -225,7 +225,7 @@ static void ida_next(uint8_t e) {
 
   case Starting:
     /* START sent, waiting it to finish */
-    if (e == TW_START) {
+    if (e == TW_START || e == TW_REP_START) {
       // The bus is available, begin messaging a node
       i = 0;
       if (current_req->rt == I2Creceive) {        
