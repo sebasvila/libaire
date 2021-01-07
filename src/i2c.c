@@ -1,6 +1,6 @@
 #include <avr/io.h>
 #include <stdint.h>
-#include <twi.h>
+#include <util/twi.h>
 #include <avr/interrupt.h>
 #include "i2cr.h"
 #include "i2cq.h"
@@ -48,30 +48,6 @@ void i2c_close(void) {
 }
 
 
-
-/* void i2c_sandr(i2cr_addr_t node,
-	       const uint8_t *const  s_buffer,
-	       uint8_t s_length,
-	       uint8_t *const  r_buffer,
-	       uint8_t r_length,
-	       volatile i2cr_status_t *const status) {
-  i2cr_request_t r =
-    {
-     .rt = I2Csendrec,
-     .node = node,
-     .send_buffer = s_buffer,
-     .send_length = s_length,
-     .receive_buffer = r_buffer,
-     .receive_length = r_length,
-     .status = status,
-    };
-
-  while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, &r);
-} */
-
-
-
 bool i2c_swamped(void) {
   return i2cq_is_full(&requests);
 }
@@ -104,7 +80,7 @@ void i2c_receive_bb(i2cr_addr_t node,
 
 
 /* request being processed by driver */
-static i2cr_request_t *current_req; // could it be a pointer?
+static const i2cr_request_t *current_req;
 
 
 
@@ -329,9 +305,9 @@ void i2c_send(i2cr_addr_t node,
      .length = length,
      .status = status,
     };
-
+  
   while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, r);
+  i2cq_enqueue(&requests, &r);
   
   if (ida_state == Idle){
     //Start the automata
@@ -355,7 +331,7 @@ void i2c_receive(i2cr_addr_t node,
     };
 
   while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, r);
+  i2cq_enqueue(&requests, &r);
 
   if (ida_state == Idle){
     //Start the automata
@@ -363,3 +339,15 @@ void i2c_receive(i2cr_addr_t node,
   }
 }
 
+
+/* void i2c_sandr(i2cr_addr_t node,
+	       const uint8_t *const  s_buffer,
+	       uint8_t s_length,
+	       uint8_t *const  r_buffer,
+	       uint8_t r_length,
+	       volatile i2cr_status_t *const status) {
+  volatile i2cr_status_t st;
+  i2c_send(node, s_buffer, s_length, &st);
+  i2c_receive(node, r_buffer, r_length, status);
+
+} */
