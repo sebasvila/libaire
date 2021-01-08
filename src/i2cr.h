@@ -8,7 +8,10 @@
  */
 
 /* An i2c request type */
-typedef enum {I2Csend, I2Creceive} i2cr_type_t;
+typedef enum {I2Csend, 
+              I2Creceive, 
+              I2Csend_B       //!< Defines a single-byte send request type
+              } i2cr_type_t;
 
 /* An i2c node address */
 typedef uint8_t i2cr_addr_t;

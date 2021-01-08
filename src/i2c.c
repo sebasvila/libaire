@@ -57,12 +57,6 @@ bool i2c_swamped(void) {
 }
 
 
-
-void i2c_send_b(i2cr_addr_t node,
-		uint8_t b,
-		volatile i2cr_status_t *const status) {};
-
-
 void i2c_send_bb(i2cr_addr_t node,
 		 uint16_t b,
 		 volatile i2cr_status_t *const status) {};
@@ -218,7 +212,7 @@ static void ida_next(uint8_t e) {
         throw_byte(current_req->node << 1 | TW_READ);
         ida_state = SeekingSlaveRx;
       } else {
-        // I2Csend
+        // I2Csend and I2Csend_B
         throw_byte((current_req->node << 1) | TW_WRITE);
         ida_state = SeekingSlaveTx;
       }
@@ -231,7 +225,12 @@ static void ida_next(uint8_t e) {
   case SeekingSlaveTx:
     if (e == TW_MT_SLA_ACK) {
       // Slave contacted, let's talk with him
-      throw_byte(current_req->buffer[i++]);
+      if (current_req->rt == I2Csend){
+        throw_byte(current_req->buffer[i++]);
+      } else if (current_req->rt == I2Csend_B){
+        throw_byte((uint8_t)(uint16_t) current_req->buffer);
+        i++;
+      }
       ida_state = TxData;
     } else if (e == TW_MT_SLA_NACK) {
       // Slave contacted and not available
@@ -251,7 +250,7 @@ static void ida_next(uint8_t e) {
         // No more data to send
         fetch_or_idle(Success);
       }
-    } else if (e == TW_MT_DATA_NACK) {
+    } else if (e == TW_MT_DATA_NACK) {      
       // Data rejected by slave
       fetch_or_idle(SlaveDiscardedData);
     } else {
@@ -387,3 +386,26 @@ void i2c_sandr(i2cr_addr_t node,
     ida_next(TW_GO_OPERATIVE);
   }
 }
+
+
+
+void i2c_send_b(i2cr_addr_t node,
+		            uint8_t b,
+		            volatile i2cr_status_t *const status) {
+  i2cr_request_t r =
+    {
+     .rt = I2Csend_B,
+     .node = node,
+     .buffer = (uint8_t *const)(uint16_t) b,  //Byte is saved as an address (lower byte) because `buffer` is a pointer 
+     .length = 1,
+     .status = status,
+    };
+  
+  while (i2cq_is_full(&requests));
+  i2cq_enqueue(&requests, &r);
+  
+  if (ida_state == Idle){
+    //Start the automata
+    ida_next(TW_GO_OPERATIVE);
+  }
+};
