@@ -7,64 +7,8 @@
 #include "i2c.h"
 
 
-#define TW_GO_OPERATIVE 0xff
-
-#ifndef TWI_FREQ
-#define TWI_FREQ 100000UL
-#endif
-
-
-
-/* Automata current state */
-static enum {
-  Idle, Starting, SeekingSlaveTx, TxData, SeekingSlaveRx, RxData
-} ida_state;
-
-
-/* Requests queue */
-static i2cq_t requests;
-
-
-void i2c_setup(void) {
-  i2cq_empty(&requests);
-  ida_state = Idle;
-
-  //Internal pullups SDA & SCL
-  //PORTC |=  (1<<4) |
-  //          (1<<5);
-
-  //Initialize I2C prescaler and bit rate
-  TWSR &= ~(1<<TWPS0) &
-          ~(1<<TWPS1);
-  
-  /* I2C bit rate formula from atmega128 manual pg 204
-  SCL Frequency = CPU Clock Frequency / (16 + (2 * TWBR))
-  note: TWBR should be 10 or higher for master mode
-  It is 72 for a 16mhz Wiring board with 100kHz TWI */
-  TWBR = ((F_CPU / TWI_FREQ) - 16) / 2;
-  
-  //I2C control register
-  TWCR = _BV(TWEN) |  //Enable I2C module
-         _BV(TWIE) ;  //Enable I2C interrupts
-}
-
-
-
-
-void i2c_open(void) {
-
-}
-
-
-void i2c_close(void) {
-  while(ida_state != Idle);   //Wait if automata is still working
-  TWCR = 0;                   //Disable I2C module (especially the TWEN bit)
-}
-
-
-bool i2c_swamped(void) {
-  return i2cq_is_full(&requests);
-}
+#define TW_GO_OPERATIVE 0xff  // special automata event
+#define TWI_FREQ 100000UL     // i2c bus frequency
 
 
 
@@ -153,17 +97,18 @@ static uint8_t get_byte(void) {
 
 
 
-
-
-
-
-
-
-
 /********************************************************
  * Interrupt driven master automata
  ********************************************************/
 
+
+/* Automata current state */
+static volatile enum {
+  Idle, Starting, SeekingSlaveTx, TxData, SeekingSlaveRx, RxData
+} ida_state;
+
+/* Requests queue */
+static i2cq_t requests;
 
 /* request being processed by right now */
 static const i2cr_request_t *current_req;
@@ -214,6 +159,7 @@ static void ida_next(uint8_t e) {
       ida_state = Starting;
     } else {
       // unexpected event
+      fetch_or_idle(InternalError);
     }
     break;
 
@@ -232,7 +178,7 @@ static void ida_next(uint8_t e) {
       }
     } else {
       // unexpected event
-      // error();
+      fetch_or_idle(InternalError);
     }
     break;
 
@@ -314,15 +260,53 @@ static void ida_next(uint8_t e) {
   }
 }
 
-
-
+/* interrupt service */
 ISR(TWI_vect) {
   ida_next(TW_STATUS);
 }
 
 
 
+/*************************************************************
+ * Generic management operations
+ *************************************************************/
 
+void i2c_setup(void) {
+  // Initialize I2C prescaler and bit rate
+  TWSR &= ~(1<<TWPS0) & ~(1<<TWPS1);
+  
+  /* 
+   * I2C bit rate formula from atmega128 manual pg 204
+   * SCL Frequency = CPU Clock Frequency / (16 + (2 * TWBR))
+   * note: TWBR should be 10 or higher for master mode.
+   * It is 72 for a 16MHz clocked board with 100kHz TWI 
+   */
+  TWBR = ((F_CPU / TWI_FREQ) - 16) / 2;
+}
+
+
+void i2c_open(void) {
+  i2cq_empty(&requests);
+  ida_state = Idle;
+  TWCR = _BV(TWEN);  // Enable I2C module
+}
+
+
+void i2c_close(void) {
+  while(ida_state != Idle);           // Wait till queue empty
+  TWCR = 0;                           // Disable I2C module
+}
+
+
+bool i2c_swamped(void) {
+  return i2cq_is_full(&requests);
+}
+
+
+
+/*************************************************************
+ * Block transmision operations
+ *************************************************************/
 
 void i2c_send(i2cr_addr_t node,
 	      uint8_t *const  buffer,
@@ -373,6 +357,10 @@ void i2c_receive(i2cr_addr_t node,
 }
 
 
+/*************************************************************
+ * Byte transmision operations
+ *************************************************************/
+
 void i2c_send_uint8(i2cr_addr_t node,
 		    uint8_t b,
 		    volatile i2cr_status_t *const status) {
@@ -403,8 +391,9 @@ void i2c_receive_uint8(i2cr_addr_t node,
 		       volatile i2cr_status_t *const status) {};
 
 
-
-
+/*************************************************************
+ * Combined transmision operations
+ *************************************************************/
 
 void i2c_sandr(i2cr_addr_t node,
 	        uint8_t *const  s_buffer,
@@ -412,7 +401,6 @@ void i2c_sandr(i2cr_addr_t node,
 	        uint8_t *const  r_buffer,
 	        uint8_t r_length,
 	        volatile i2cr_status_t *const status) {
-  
 }
 
 
