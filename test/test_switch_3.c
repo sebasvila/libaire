@@ -7,7 +7,7 @@
 #include "pt.h"
 #include "pt-delay.h"
 #include "ticker.h"
-#include "shielditic.h"
+#include "test_fixture.h"
 #include "switch.h"
 
 /* ticks (10ms) between led changes */
@@ -94,7 +94,7 @@ int main(void) {
   /* init modules */
   ticker_setup();
   ticker_start();
-  shielditic_setup();
+  fixture_setup();
   switch_setup();
   sei();
   

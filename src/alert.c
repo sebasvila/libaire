@@ -3,8 +3,18 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include "pin.h"
-#include "config.h"
 #include "alert.h"
+
+
+/*
+ * Define the signaling LED according to the platform
+ */
+#if defined(ArduinoONE)
+#define FATAL_ALERT_PORT PORTB
+#define FATAL_ALERT_PIN  5
+#elif defined(ArduinoMEGA)
+
+#endif
 
 
 
@@ -40,8 +50,8 @@ void alert_fatal(uint8_t e) {
 			     FATAL_ALERT_PIN,
 			     Output);
   for(;;) {
-    dash(); _delay_ms(BLACK); dash();
-    _delay_ms(BLACK);
+    dash(); _delay_ms(BLACK);
+    dash(); _delay_ms(BLACK);
     for (uint8_t i=0; i<e; i++) {
       dot(); _delay_ms(BLACK);
     }

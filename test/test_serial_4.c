@@ -6,7 +6,7 @@
 #include "ticker.h"
 #include "adc.h"
 #include "serial.h"
-#include "config.h"
+#include "test_fixture.h"
 
 static uint8_t offset;
 
