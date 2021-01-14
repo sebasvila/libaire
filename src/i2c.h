@@ -67,7 +67,7 @@ bool i2c_swamped(void);
  * @param status: A pointer to a `volatile i2cr_status_t` variable that 
  *               contains the current status of the request. If NULL, then
  *               no status will be reported (not recommeded).
- * @prec length > 0
+ * @pre   length > 0
  * @post *status == Running if status != NULL
  */
 void i2c_send(i2cr_addr_t node,
@@ -94,7 +94,7 @@ void i2c_send(i2cr_addr_t node,
  * @param status: A pointer to a `volatile i2cr_status_t` variable 
  *                that contains the status of the request. If NULL, them
  *                no status will be reported (not recommended).
- * @prec length > 0
+ * @pre length > 0
  * @post *status == Running if status != NULL
  */
 void i2c_receive(i2cr_addr_t node,
@@ -126,7 +126,7 @@ void i2c_receive(i2cr_addr_t node,
  * @param status: A pointer to a `volatile i2cr_status_t` variable 
  *                that contains the current state of the request. If
  *                NULL, no status will be reported (not recommended).
- * @prec length > 0
+ * @pre length > 0
  * @post *status == Running if status != NULL
  */
 void i2c_send_uint8(i2cr_addr_t node,
@@ -177,7 +177,7 @@ void i2c_receive_uint8(i2cr_addr_t node,
  * @param status:   A pointer to a `volatile i2cr_status_t` variable 
  *                  that contains the status of the request. If NULL, them
  *                  no status will be reported (not recommended).
- * @prec s_length > 0 and r_length > 0 and 
+ * @pre s_length > 0 and r_length > 0 and 
          len(s_buffer) >= s_length and len(r_buffer >= r_length)
  * @post *status == Running if status != NULL
  */

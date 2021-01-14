@@ -24,8 +24,6 @@ typedef uint8_t i2cr_addr_t;
 typedef enum {
   Running=0,
   Success,
-  NodeCanceledSend,
-  ReceivedMessageOverflow,
   ReceivedMessageLenError,
   SlaveRejected,
   SlaveDiscardedData,

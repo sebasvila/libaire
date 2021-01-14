@@ -13,9 +13,8 @@ Welcome to libaire's documentation!
 	     
    intro
    adc
+   i2c
 
-
-Pepito
 
 Indices and tables
 ==================
