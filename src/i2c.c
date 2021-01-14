@@ -123,7 +123,8 @@ static const i2cr_request_t *current_req;
  * @param s Status to be written to the already-finished current request.
  */
 static void fetch_or_idle(i2cr_status_t s) {
-  *(current_req->status) = s;
+  // return status if it should be returned
+  if (current_req->status) *(current_req->status) = s;
   i2cq_dequeue(&requests);
   if (i2cq_is_empty(&requests)) {
     throw_stop();
@@ -322,8 +323,8 @@ void i2c_send(i2cr_addr_t node,
   while (i2cq_is_full(&requests));
   i2cq_enqueue(&requests, &r);
   
-  // initialize the status to Running
-  *status = Running;
+  // initialize the status to Running if needed
+  if (status) *status = Running;
 
   if (ida_state == Idle){
     //Start the automata
@@ -347,8 +348,8 @@ void i2c_receive(i2cr_addr_t node,
   while (i2cq_is_full(&requests));
   i2cq_enqueue(&requests, &r);
 
-  // initialize the status to Running
-  *status = Running;
+  // initialize the status to Running if needed
+  if (status) *status = Running;
 
   if (ida_state == Idle){
     //Start the automata
@@ -374,8 +375,8 @@ void i2c_send_uint8(i2cr_addr_t node,
   while (i2cq_is_full(&requests));
   i2cq_enqueue(&requests, &r);
 
-  // initialize the status to Running
-  *status = Running;
+  // initialize the status to Running if needed
+  if (status) *status = Running;
   
   if (ida_state == Idle){
     //Start the automata
