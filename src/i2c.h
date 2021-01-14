@@ -88,12 +88,12 @@ void i2c_send(i2cr_addr_t node,
  * processing state. If the i2d driver cannot receive more requests,
  * the call blocks until this request can be accepted.
  * 
- * @param node   The I2C byte address of the sender.
- * @param buffer A pointer to a byte array where the message will be saved.
- * @param length The number of bytes to be received from the buffer.
- * @param status A pointer to a `volatile i2cr_status_t` variable 
- *               that contains the status of the request. If NULL, them
- *               no status will be reported (not recommended).
+ * @param node:   The I2C byte address of the sender.
+ * @param buffer: A pointer to a byte array where the message will be saved.
+ * @param length: The number of bytes to be received from the buffer.
+ * @param status: A pointer to a `volatile i2cr_status_t` variable 
+ *                that contains the status of the request. If NULL, them
+ *                no status will be reported (not recommended).
  * @prec length > 0
  * @post *status == Running if status != NULL
  */
@@ -122,10 +122,10 @@ void i2c_receive(i2cr_addr_t node,
  * this request can be accepted.
  * 
  * @param node:   The I2C byte address of the sender.
- * @param b: An uint8_t value to be sent.
+ * @param b:      An uint8_t value to be sent.
  * @param status: A pointer to a `volatile i2cr_status_t` variable 
- *               that contains the current state of the request. If
- *               NULL, no status will be reported (not recommended).
+ *                that contains the current state of the request. If
+ *                NULL, no status will be reported (not recommended).
  * @prec length > 0
  * @post *status == Running if status != NULL
  */
@@ -134,7 +134,24 @@ void i2c_send_uint8(i2cr_addr_t node,
 		    volatile i2cr_status_t *const status);
 
 /**
- * @brief Asyncronously receives a single byte from an i2c node.
+ * @brief Request the driver to (asyncronously) receive from `node`
+ * a uint8_t message and to store it in `*b`.
+ * `*status` has the current state of the request:
+ *  - Running: while request not scheduled
+ *  - Success: when request ended satifactorily
+ *  - Other values: when request ended with an error condition.
+ *
+ * `*status` and `*b` cannot be disposed until send request
+ * execution finished. `*status` can be queried to know the request
+ * processing state. If the i2d driver cannot receive more requests,
+ * the call blocks until this request can be accepted.
+ * 
+ * @param node:   The I2C byte address of the sender.
+ * @param b:      A pointer to an uint8_t where the message will be saved.
+ * @param status: A pointer to a `volatile i2cr_status_t` variable 
+ *                that contains the status of the request. If NULL, them
+ *                no status will be reported (not recommended).
+ * @post *status == Running if status != NULL
  */
 void i2c_receive_uint8(i2cr_addr_t node,
 		       uint8_t *const b,

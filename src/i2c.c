@@ -227,7 +227,7 @@ static void ida_next(uint8_t e) {
       // Slave contacted, let's talk with him
       // First byte is received. Maybe the last one
       // current_req->data.ue.buffer[i++] = get_byte();   ??????????????????
-      throw_request_byte(current_req->data.ue.length == 1);
+      throw_request_byte(false);
       ida_state = RxData;
     } else if (e == TW_MR_SLA_NACK) {
       // Slave contacted and not available
@@ -389,7 +389,26 @@ void i2c_send_uint8(i2cr_addr_t node,
 
 void i2c_receive_uint8(i2cr_addr_t node,
 		       uint8_t *const b,
-		       volatile i2cr_status_t *const status) {};
+		       volatile i2cr_status_t *const status) {
+  i2cr_request_t r = {
+    .rt = I2Creceive,
+    .node = node,
+    .status = status,
+    .data.ue = {.buffer = b, .length = 1},
+  };
+
+  while (i2cq_is_full(&requests));
+  i2cq_enqueue(&requests, &r);
+
+  // initialize the status to Running if needed
+  if (status) *status = Running;
+
+  if (ida_state == Idle){
+    //Start the automata
+    ida_next(TW_GO_OPERATIVE);
+  }
+
+};
 
 
 /*************************************************************
