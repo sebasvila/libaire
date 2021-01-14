@@ -22,8 +22,7 @@ typedef struct {
 } i2cq_t;
 
 
-/* Intializes `q` to empty. 
- */
+/* Initializes `q` to empty  */
 void i2cq_empty(i2cq_t *const q);
 
 /* Returns true iff `q` is empty */
@@ -40,8 +39,12 @@ void i2cq_enqueue(i2cq_t *const q, const i2cr_request_t *const v);
  */
 void i2cq_dequeue(i2cq_t *const q);
 
-/* Returns a pointer to an i2c request, the front of `q`. 
- * If `q` is empty an undefined value is returned.
+/* 
+ * Gets the front of `q`. 
+ *
+ * @returns A pointer to the i2c request in the queue front. This object must
+ *          be considered constant and must not be modified. 
+ *          If `q` is empty, the return value is undefined.
  */
 const i2cr_request_t *i2cq_front(const i2cq_t *const q);
 

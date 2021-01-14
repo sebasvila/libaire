@@ -9,11 +9,19 @@
 
 #define TW_GO_OPERATIVE 0xff
 
+#ifndef TWI_FREQ
+#define TWI_FREQ 100000UL
+#endif
+
+
+
 /* Automata current state */
-enum {Idle, Starting, SeekingSlaveTx, TxData,
-	      SeekingSlaveRx, RxData
+static enum {
+  Idle, Starting, SeekingSlaveTx, TxData, SeekingSlaveRx, RxData
 } ida_state;
 
+
+/* Requests queue */
 static i2cq_t requests;
 
 
@@ -22,8 +30,8 @@ void i2c_setup(void) {
   ida_state = Idle;
 
   //Internal pullups SDA & SCL
-  PORTC |=  (1<<4) |
-            (1<<5);
+  //PORTC |=  (1<<4) |
+  //          (1<<5);
 
   //Initialize I2C prescaler and bit rate
   TWSR &= ~(1<<TWPS0) &
@@ -39,6 +47,8 @@ void i2c_setup(void) {
   TWCR = _BV(TWEN) |  //Enable I2C module
          _BV(TWIE) ;  //Enable I2C interrupts
 }
+
+
 
 
 void i2c_open(void) {
@@ -57,29 +67,6 @@ bool i2c_swamped(void) {
 }
 
 
-void i2c_send_bb(i2cr_addr_t node,
-		 uint16_t b,
-		 volatile i2cr_status_t *const status) {};
-
-void i2c_receive_b(i2cr_addr_t node,
-		   uint8_t b,
-		   volatile i2cr_status_t *const status) {};
-
-void i2c_receive_bb(i2cr_addr_t node,
-		    uint16_t b,
-		    volatile i2cr_status_t *const status) {};
-
-
-
-
-/********************************************************
- * Interrupt driven master automata
- ********************************************************/
-
-
-/* request being processed by driver */
-static const i2cr_request_t *current_req;
-
 
 
 /************************
@@ -96,12 +83,13 @@ static void disable_i2c_interrupts(void) {
 
 /**
  * @brief Send a start condition to the I2C bus as a Master.
+ * Enable interrupts.
  */
 static void throw_start(void) {
-  TWCR = (1<<TWINT) |  //Clears the flag
-         (1<<TWEN)  |  //Enable TWI. Hardware takes control over the I/O pins connected to the SCL and SDA pins
-         (1<<TWSTA) |  //Generates the START condition. Application desires to be Master on the bus
-         (1<<TWIE);    //Enable I2C interrupts
+  TWCR = (1<<TWINT) |  // Clears previous interrupt flag
+         (1<<TWSTA) |  // Generates START condition.
+         (1<<TWEN)  |  // Enable TWI. 
+         (1<<TWIE);    // Enable I2C interrupts
 }
 
 
@@ -109,51 +97,77 @@ static void throw_start(void) {
  * @brief Send a stop condition to the I2C bus.
  */
 static void throw_stop(void) {
-  TWCR =  (1<<TWINT) |  //Clears the flag
-          (1<<TWEN)  |  //Enable TWI. Hardware takes control over the I/O pins connected to the SCL and SDA pins
-          (1<<TWSTO);   //Generates the STOP condition.
+  TWCR =  (1<<TWINT) |  // Clears previous interrupt flag
+          (1<<TWSTO) |  // Generate STOP condition.
+          (1<<TWEN);    // Enable TWI.
 }
 
 
 /**
- * @brief Send a byte to the I2C bus. It can be either an address or data.
+ * @brief Send a byte to the I2C bus. It can be either an SLA or data.
  * 
  * @param b The byte to be sent.
  */
 static void throw_byte(uint8_t b) {
-  TWDR = b;             //Load byte to TWDR data register
-  TWCR = (1<<TWINT) |   //Clears the flag
-         (1<<TWEN)  |   //Enable TWI
-         (1<<TWIE);     //Enable I2C interrupts
+  TWDR = b;             // Load byte to TWDR data register
+  TWCR = (1<<TWINT) |   // Clears previous interrupt flag
+         (1<<TWEN)  |   // Enable TWI
+         (1<<TWIE);     // Enable I2C interrupts
 }
 
 
 /**
- * @brief Send a request byte to the I2C bus.
- * Used to ask for more data to a slave.
+ * @brief Send a byte request to the I2C bus.
+ * Used in master receive mode to ACK or NACK last byte arrived thus
+ * indirectly asking slave for a new data byte or not.
  * 
- * @param is_last A boolean to determine if this requested byte is the last.
- *  - True: Our machine will respond a NACK when the byte will be recieved
- *  - False: Our machine will respond an ACK when the byte will be recieved as there are still more bytes to recieve.
+ * @param is_last: true iff master do not wants to receive more bytes
+ *
  */
 static void throw_request_byte(bool is_last){
   if (is_last){
-    TWCR &= ~(1<<TWEA); //NACK
+    // send NACK
+    TWCR =
+      (1<<TWINT) |  // Clears last interrupt flag
+      (1<<TWEN)  |  // Enable TWI. Hardware takes control over the I/O pins connected to the SCL and SDA pins
+      (1<<TWIE);    // Enable I2C interrupts
   } else {
-    TWCR |= (1<<TWEA);  //ACK
+    // send ACK
+    TWCR =
+      (1<<TWINT) |  // Clears last interrupt flag
+      (1<<TWEA)  |  // Send ACK
+      (1<<TWEN)  |  // Enable TWI
+      (1<<TWIE);    // Enable I2C interrupts
   }
-
-  TWCR |= (1<<TWINT) |  //Clears the flag
-          (1<<TWEN)  |  //Enable TWI. Hardware takes control over the I/O pins connected to the SCL and SDA pins
-          (1<<TWIE);    //Enable I2C interrupts
 }
 
 
 /**
- * @brief Get the recieved byte from I2C.
- * The TWDR port is both used to send and recieve data.
+ * @brief Get the recieved byte from I2C hw
+ *
+ * The TWDR port is both used to send and receive data.
  */
-#define GET_RECIEVED_BYTE() TWDR
+static uint8_t get_byte(void) {
+  return TWDR;
+}
+
+
+
+
+
+
+
+
+
+
+/********************************************************
+ * Interrupt driven master automata
+ ********************************************************/
+
+
+/* request being processed by right now */
+static const i2cr_request_t *current_req;
+
 
 
 /**
@@ -186,7 +200,7 @@ static void fetch_or_idle(i2cr_status_t s) {
  * @param e A byte containing the I2C current hardware status.
  */
 static void ida_next(uint8_t e) {
-  static uint8_t i;   //!< Next byte index to be Rx/Tx
+  static uint8_t i;   //!< Index of next byte to be Rx/Tx
 
   switch (ida_state) {
   case Idle:
@@ -212,7 +226,7 @@ static void ida_next(uint8_t e) {
         throw_byte(current_req->node << 1 | TW_READ);
         ida_state = SeekingSlaveRx;
       } else {
-        // I2Csend and I2Csend_B
+        // I2Csend and I2Csend_uint8
         throw_byte((current_req->node << 1) | TW_WRITE);
         ida_state = SeekingSlaveTx;
       }
@@ -226,9 +240,9 @@ static void ida_next(uint8_t e) {
     if (e == TW_MT_SLA_ACK) {
       // Slave contacted, let's talk with him
       if (current_req->rt == I2Csend){
-        throw_byte(current_req->buffer[i++]);
-      } else if (current_req->rt == I2Csend_B){
-        throw_byte((uint8_t)(uint16_t) current_req->buffer);
+        throw_byte(current_req->data.ue.buffer[i++]);
+      } else if (current_req->rt == I2Csend_uint8){
+        throw_byte(current_req->data.local_byte);
         i++;
       }
       ida_state = TxData;
@@ -237,15 +251,17 @@ static void ida_next(uint8_t e) {
       fetch_or_idle(SlaveRejected);
     } else {
       // Unexpected event
+      fetch_or_idle(InternalError);
     }
     break;
 
   case TxData:
     if (e == TW_MT_DATA_ACK) {
       // Data sent ok
-      if (current_req->length != i) {
+      if (current_req->rt != I2Csend_uint8 &&
+	  i < current_req->data.ue.length) {
         // Send another byte and remain in the same state
-        throw_byte(current_req->buffer[i++]);
+        throw_byte(current_req->data.ue.buffer[i++]);
       } else {
         // No more data to send
         fetch_or_idle(Success);
@@ -255,41 +271,44 @@ static void ida_next(uint8_t e) {
       fetch_or_idle(SlaveDiscardedData);
     } else {
       // Unexpected event
+      fetch_or_idle(InternalError);
     }
     break;
     
   case SeekingSlaveRx:
     if (e == TW_MR_SLA_ACK) {
       // Slave contacted, let's talk with him
-      // Request a new byte. Maybe the last one
-      throw_request_byte(current_req->length == 1);
+      // First byte is received. Maybe the last one
+      // current_req->data.ue.buffer[i++] = get_byte();   ??????????????????
+      throw_request_byte(current_req->data.ue.length == 1);
       ida_state = RxData;
     } else if (e == TW_MR_SLA_NACK) {
       // Slave contacted and not available
       fetch_or_idle(SlaveRejected);
     } else {
       // Unexpected event
+      fetch_or_idle(InternalError);
     }
     break;
 
   case RxData:
     if (e == TW_MR_DATA_ACK) {
       // Get another byte and remain in the same state
-      current_req->buffer[i++] = GET_RECIEVED_BYTE();
-      //If just one byte remains, next status will be TW_MR_DATA_NACK
-      throw_request_byte(i >= (current_req->length - 1));
+      current_req->data.ue.buffer[i++] = get_byte();
+      //If this was the last byte, next event will be TW_MR_DATA_NACK
+      throw_request_byte(current_req->data.ue.length == i);
     } else if (e == TW_MR_DATA_NACK) {
-      //Get last byte
-      current_req->buffer[i++] = GET_RECIEVED_BYTE();
-      if (current_req->length == i) {
-        // No more data to recieve
+      // Check if all expected data was received
+      if (current_req->data.ue.length == i) {
+        // No more data to receive
         fetch_or_idle(Success);
       } else {
-        //Last byte has been recieved but number of recieved bytes is wrong
+        // Received a block shorter than expected
         fetch_or_idle(ReceivedMessageLenError);
       }
     } else {
       // Unexpected event
+      fetch_or_idle(InternalError);
     }
     break;
   }
@@ -302,22 +321,26 @@ ISR(TWI_vect) {
 }
 
 
+
+
+
 void i2c_send(i2cr_addr_t node,
 	      uint8_t *const  buffer,
 	      uint8_t length,
 	      volatile i2cr_status_t *const  status) {
-  i2cr_request_t r =
-    {
-     .rt = I2Csend,
-     .node = node,
-     .buffer = buffer,
-     .length = length,
-     .status = status,
-    };
+  i2cr_request_t r = {
+    .rt = I2Csend,
+    .node = node,
+    .status = status,
+    .data.ue = { .buffer = buffer, .length = length},
+  };
   
   while (i2cq_is_full(&requests));
   i2cq_enqueue(&requests, &r);
   
+  // initialize the status to Running
+  *status = Running;
+
   if (ida_state == Idle){
     //Start the automata
     ida_next(TW_GO_OPERATIVE);
@@ -330,23 +353,58 @@ void i2c_receive(i2cr_addr_t node,
 		 uint8_t *const buffer,
 		 uint8_t length,
 		 volatile i2cr_status_t *const  status) {
-  i2cr_request_t r =
-    {
-     .rt = I2Creceive,
-     .node = node,
-     .buffer = buffer,
-     .length = length,
-     .status = status,
-    };
+  i2cr_request_t r = {
+    .rt = I2Creceive,
+    .node = node,
+    .status = status,
+    .data.ue = {.buffer = buffer, .length = length},
+  };
 
   while (i2cq_is_full(&requests));
   i2cq_enqueue(&requests, &r);
+
+  // initialize the status to Running
+  *status = Running;
 
   if (ida_state == Idle){
     //Start the automata
     ida_next(TW_GO_OPERATIVE);
   }
 }
+
+
+void i2c_send_uint8(i2cr_addr_t node,
+		    uint8_t b,
+		    volatile i2cr_status_t *const status) {
+  i2cr_request_t r = {
+    .rt = I2Csend_uint8,
+    .node = node,
+    .status = status,
+    .data.local_byte = b
+  };
+  
+  while (i2cq_is_full(&requests));
+  i2cq_enqueue(&requests, &r);
+
+  // initialize the status to Running
+  *status = Running;
+  
+  if (ida_state == Idle){
+    //Start the automata
+    ida_next(TW_GO_OPERATIVE);
+  }
+}
+
+
+
+
+void i2c_receive_uint8(i2cr_addr_t node,
+		       uint8_t *const b,
+		       volatile i2cr_status_t *const status) {};
+
+
+
+
 
 void i2c_sandr(i2cr_addr_t node,
 	        uint8_t *const  s_buffer,
@@ -355,57 +413,7 @@ void i2c_sandr(i2cr_addr_t node,
 	        uint8_t r_length,
 	        volatile i2cr_status_t *const status) {
   
-  static volatile i2cr_status_t st;
-  
-  i2cr_request_t send_req =
-    {
-     .rt = I2Csend,
-     .node = node,
-     .buffer = s_buffer,
-     .length = s_length,
-     .status = &st,
-    };
-  
-  i2cr_request_t recieve_req =
-    {
-     .rt = I2Creceive,
-     .node = node,
-     .buffer = r_buffer,
-     .length = r_length,
-     .status = status,
-    };
-
-  while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, &send_req);
-  
-  while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, &recieve_req);
-
-  if (ida_state == Idle){
-    //Start the automata
-    ida_next(TW_GO_OPERATIVE);
-  }
 }
 
 
 
-void i2c_send_b(i2cr_addr_t node,
-		            uint8_t b,
-		            volatile i2cr_status_t *const status) {
-  i2cr_request_t r =
-    {
-     .rt = I2Csend_B,
-     .node = node,
-     .buffer = (uint8_t *const)(uint16_t) b,  //Byte is saved as an address (lower byte) because `buffer` is a pointer 
-     .length = 1,
-     .status = status,
-    };
-  
-  while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, &r);
-  
-  if (ida_state == Idle){
-    //Start the automata
-    ida_next(TW_GO_OPERATIVE);
-  }
-};
