@@ -1,7 +1,8 @@
-#include <avr/io.h>
 #include <stdint.h>
-#include <util/twi.h>
+#include <stdlib.h>
+#include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/twi.h>
 #include "i2cr.h"
 #include "i2cq.h"
 #include "i2c.h"
@@ -421,6 +422,8 @@ void i2c_sandr(i2cr_addr_t node,
 	        uint8_t *const  r_buffer,
 	        uint8_t r_length,
 	        volatile i2cr_status_t *const status) {
+  i2c_send(node, s_buffer, s_length, NULL);
+  i2c_receive(node, r_buffer, r_length, status);
 }
 
 

@@ -163,6 +163,24 @@ void i2c_receive_uint8(i2cr_addr_t node,
  * Send and then receive blocks
  ******************************************************************/
 
+/**
+ * @brief Sends a message and then reads
+ *
+ * Equivalent to first sending the message and then receiving the result.
+ * `*status` corresponds to receive operation.
+ *
+ * @param node:     Slave node address
+ * @param s_buffer: Pointer to send message buffer
+ * @param s_length: Length of message to be sent
+ * @param r_buffer: Pointer to receive buffer
+ * @param r_length: Expected length of received message
+ * @param status:   A pointer to a `volatile i2cr_status_t` variable 
+ *                  that contains the status of the request. If NULL, them
+ *                  no status will be reported (not recommended).
+ * @prec s_length > 0 and r_length > 0 and 
+         len(s_buffer) >= s_length and len(r_buffer >= r_length)
+ * @post *status == Running if status != NULL
+ */
 void i2c_sandr(i2cr_addr_t node,
 	       uint8_t *const  s_buffer,
 	       uint8_t s_lenght,
