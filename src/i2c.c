@@ -3,6 +3,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/twi.h>
+#include <util/atomic.h>
 #include "i2cr.h"
 #include "i2cq.h"
 #include "i2c.h"
@@ -310,6 +311,27 @@ bool i2c_swamped(void) {
  * Block transmision operations
  *************************************************************/
 
+/*
+ * factorizes a common task of all operations
+ */
+static void put_request(const i2cr_request_t *const r) {
+  // initialize the status to Running if needed
+  if (r->status) *(r->status) = Running;
+
+  // protects a queue modification using some operation of
+  // this module from an ISR.
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    while (i2cq_is_full(&requests));
+    i2cq_enqueue(&requests, r);
+
+    if (ida_state == Idle){
+      //Start the automata
+      ida_next(TW_GO_OPERATIVE);
+    }
+  }
+}  
+
+
 void i2c_send(i2cr_addr_t node,
 	      uint8_t *const  buffer,
 	      uint8_t length,
@@ -320,17 +342,8 @@ void i2c_send(i2cr_addr_t node,
     .status = status,
     .data.ue = { .buffer = buffer, .length = length},
   };
-  
-  while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, &r);
-  
-  // initialize the status to Running if needed
-  if (status) *status = Running;
 
-  if (ida_state == Idle){
-    //Start the automata
-    ida_next(TW_GO_OPERATIVE);
-  }
+  put_request(&r);
 }
 
 
@@ -346,16 +359,7 @@ void i2c_receive(i2cr_addr_t node,
     .data.ue = {.buffer = buffer, .length = length},
   };
 
-  while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, &r);
-
-  // initialize the status to Running if needed
-  if (status) *status = Running;
-
-  if (ida_state == Idle){
-    //Start the automata
-    ida_next(TW_GO_OPERATIVE);
-  }
+  put_request(&r);
 }
 
 
@@ -373,16 +377,7 @@ void i2c_send_uint8(i2cr_addr_t node,
     .data.local_byte = b
   };
   
-  while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, &r);
-
-  // initialize the status to Running if needed
-  if (status) *status = Running;
-  
-  if (ida_state == Idle){
-    //Start the automata
-    ida_next(TW_GO_OPERATIVE);
-  }
+  put_request(&r);
 }
 
 
@@ -398,18 +393,8 @@ void i2c_receive_uint8(i2cr_addr_t node,
     .data.ue = {.buffer = b, .length = 1},
   };
 
-  while (i2cq_is_full(&requests));
-  i2cq_enqueue(&requests, &r);
-
-  // initialize the status to Running if needed
-  if (status) *status = Running;
-
-  if (ida_state == Idle){
-    //Start the automata
-    ida_next(TW_GO_OPERATIVE);
-  }
-
-};
+  put_request(&r);
+}
 
 
 /*************************************************************
