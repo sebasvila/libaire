@@ -15,7 +15,7 @@ AR=avr-ar
 SRC_LIB = libaire.a
 
 SRC_MODS = adc ticker pin switch timer alert queue serial \
-	   #i2cq i2c
+	   i2cq i2c
 
 SRC_TESTS = test_timer test_timer2 \
             test_pin \

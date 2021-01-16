@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include "i2cr.h"
 
+typedef i2cr_status_t i2c_status_t; // make public status type
 
 
 /******************************************************************
