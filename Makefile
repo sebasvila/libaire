@@ -1,13 +1,20 @@
-.PHONY: all implanta clean veryclean
+.PHONY: lib doc install dist clean veryclean
 
-all:
-	$(MAKE) -C build
+lib:
+	$(MAKE) -C build lib
 
-implanta: all
-	$(MAKE) -C build implanta_main
+doc:
+	$(MAKE) -C doc html
+
+install:
+	$(MAKE) -C build install
+
+dist:
+	$(MAKE) -C buid dist
 
 clean:
 	$(MAKE) -C build clean
+	$(MAKE) -C doc clean
 	cd src;  \rm -f *~ 
 	cd test; \rm -f *~
 
