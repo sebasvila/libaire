@@ -58,8 +58,8 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 if read_the_docs_build:
-    html_theme = "sphinx_rtd_theme",
-    extensions.append(html_theme)
+    html_theme = 'default',
+    # extensions.append(html_theme)
 else:
     html_theme = 'alabaster'
 
