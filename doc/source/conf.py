@@ -59,7 +59,7 @@ exclude_patterns = []
 #
 if read_the_docs_build:
     html_theme = "sphinx_rtd_theme",
-    extensions.append(html.theme)
+    extensions.append(html_theme)
 else:
     html_theme = 'alabaster'
 
