@@ -58,7 +58,7 @@ test_serial_5: serial.o queue.o adc.o ticker.o alert.o pin.o
 CC=avr-gcc
 CPPFLAGS=
 CFLAGS=-Wall -std=gnu99 -Os -fshort-enums
-LDFLAGS=-std=c99
+LDFLAGS=-std=c99  # only to link examples
 AR=avr-ar
 STRIP=avr-strip
 
@@ -125,7 +125,7 @@ tests:  $(SRC_TESTS)
 # Package distribution
 
 $(SRC_DIST).tar.gz: $(SRC_LIB) $(PUBLIC_HEADERS)
-	install -D -m 444 --strip-program=$(STRIP) -s -t tmpdist/lib $(SRC_LIB)
+	install -D -m 444 -t tmpdist/lib $(SRC_LIB)
 	for f in $(PUBLIC_HEADERS); \
            do install -D -m 444  -t tmpdist/include $(SRCDIR)/$$f; \
         done
@@ -138,7 +138,7 @@ dist:   $(SRC_DIST).tar.gz
 # Install in user local space
 
 install: lib
-	install -D -m 444 --strip-program=$(STRIP) -s -t $(USRLOCALROOT)/lib $(SRC_LIB)
+	install -D -m 644 -t $(USRLOCALROOT)/lib $(SRC_LIB)
 	for f in $(PUBLIC_HEADERS); \
            do install -D -m 444  -t $(USRLOCALROOT)/include $(SRCDIR)/$$f; \
         done
