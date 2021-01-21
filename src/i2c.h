@@ -9,7 +9,19 @@
 #include <stdbool.h>
 #include "i2cr.h"
 
-typedef i2cr_status_t i2c_status_t; // make public status type
+/* An i2c operation exit status */
+typedef enum {
+  Running=0,
+  Success,
+  ReceivedMessageLenError,
+  SlaveRejected,
+  SlaveDiscardedData,
+  InternalError,
+} i2c_status_t;
+
+
+/* An i2c node address */
+typedef uint8_t i2c_addr_t;
 
 
 /******************************************************************
@@ -65,16 +77,16 @@ bool i2c_swamped(void);
  * @param node: The I2C byte address of the receiver.
  * @param buffer: A pointer to the byte array where the message is saved.
  * @param length: The number of bytes to be sent from the buffer.    
- * @param status: A pointer to a `volatile i2cr_status_t` variable that 
+ * @param status: A pointer to a `volatile i2c_status_t` variable that 
  *               contains the current status of the request. If NULL, then
  *               no status will be reported (not recommeded).
  * @pre   length > 0
  * @post *status == Running if status != NULL
  */
-void i2c_send(i2cr_addr_t node,
+void i2c_send(i2c_addr_t node,
 	      uint8_t *const  buffer,
 	      uint8_t lenght,
-	      volatile i2cr_status_t *const status);
+	      volatile i2c_status_t *const status);
 
 /**
  * @brief Request the driver to (asyncronously) receive from `node`
@@ -92,16 +104,16 @@ void i2c_send(i2cr_addr_t node,
  * @param node:   The I2C byte address of the sender.
  * @param buffer: A pointer to a byte array where the message will be saved.
  * @param length: The number of bytes to be received from the buffer.
- * @param status: A pointer to a `volatile i2cr_status_t` variable 
+ * @param status: A pointer to a `volatile i2c_status_t` variable 
  *                that contains the status of the request. If NULL, them
  *                no status will be reported (not recommended).
  * @pre length > 0
  * @post *status == Running if status != NULL
  */
-void i2c_receive(i2cr_addr_t node,
+void i2c_receive(i2c_addr_t node,
 		 uint8_t *const buffer,
 		 uint8_t lenght,
-		 volatile i2cr_status_t *const  status);
+		 volatile i2c_status_t *const  status);
 
 
 
@@ -124,15 +136,15 @@ void i2c_receive(i2cr_addr_t node,
  * 
  * @param node:   The I2C byte address of the sender.
  * @param b:      An uint8_t value to be sent.
- * @param status: A pointer to a `volatile i2cr_status_t` variable 
+ * @param status: A pointer to a `volatile i2c_status_t` variable 
  *                that contains the current state of the request. If
  *                NULL, no status will be reported (not recommended).
  * @pre length > 0
  * @post *status == Running if status != NULL
  */
-void i2c_send_uint8(i2cr_addr_t node,
+void i2c_send_uint8(i2c_addr_t node,
 		    uint8_t b,
-		    volatile i2cr_status_t *const status);
+		    volatile i2c_status_t *const status);
 
 /**
  * @brief Request the driver to (asyncronously) receive from `node`
@@ -149,14 +161,14 @@ void i2c_send_uint8(i2cr_addr_t node,
  * 
  * @param node:   The I2C byte address of the sender.
  * @param b:      A pointer to an uint8_t where the message will be saved.
- * @param status: A pointer to a `volatile i2cr_status_t` variable 
+ * @param status: A pointer to a `volatile i2c_status_t` variable 
  *                that contains the status of the request. If NULL, them
  *                no status will be reported (not recommended).
  * @post *status == Running if status != NULL
  */
-void i2c_receive_uint8(i2cr_addr_t node,
+void i2c_receive_uint8(i2c_addr_t node,
 		       uint8_t *const b,
-		       volatile i2cr_status_t *const status);
+		       volatile i2c_status_t *const status);
 
 
 
@@ -175,19 +187,19 @@ void i2c_receive_uint8(i2cr_addr_t node,
  * @param s_length: Length of message to be sent
  * @param r_buffer: Pointer to receive buffer
  * @param r_length: Expected length of received message
- * @param status:   A pointer to a `volatile i2cr_status_t` variable 
+ * @param status:   A pointer to a `volatile i2c_status_t` variable 
  *                  that contains the status of the request. If NULL, them
  *                  no status will be reported (not recommended).
  * @pre s_length > 0 and r_length > 0 and 
          len(s_buffer) >= s_length and len(r_buffer >= r_length)
  * @post *status == Running if status != NULL
  */
-void i2c_sandr(i2cr_addr_t node,
+void i2c_sandr(i2c_addr_t node,
 	       uint8_t *const  s_buffer,
 	       uint8_t s_lenght,
 	       uint8_t *const  r_buffer,
 	       uint8_t r_lenght,
-	       volatile i2cr_status_t *const status);
+	       volatile i2c_status_t *const status);
 
 
 #endif

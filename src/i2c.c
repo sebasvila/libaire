@@ -124,7 +124,7 @@ static const i2cr_request_t *current_req;
  * 
  * @param s Status to be written to the already-finished current request.
  */
-static void fetch_or_idle(i2cr_status_t s) {
+static void fetch_or_idle(i2c_status_t s) {
   // return status if it should be returned
   if (current_req->status) *(current_req->status) = s;
   i2cq_dequeue(&requests);
@@ -332,10 +332,10 @@ static void put_request(const i2cr_request_t *const r) {
 }  
 
 
-void i2c_send(i2cr_addr_t node,
+void i2c_send(i2c_addr_t node,
 	      uint8_t *const  buffer,
 	      uint8_t length,
-	      volatile i2cr_status_t *const  status) {
+	      volatile i2c_status_t *const  status) {
   i2cr_request_t r = {
     .rt = I2Csend,
     .node = node,
@@ -348,10 +348,10 @@ void i2c_send(i2cr_addr_t node,
 
 
 
-void i2c_receive(i2cr_addr_t node,
+void i2c_receive(i2c_addr_t node,
 		 uint8_t *const buffer,
 		 uint8_t length,
-		 volatile i2cr_status_t *const  status) {
+		 volatile i2c_status_t *const  status) {
   i2cr_request_t r = {
     .rt = I2Creceive,
     .node = node,
@@ -367,9 +367,9 @@ void i2c_receive(i2cr_addr_t node,
  * Byte transmision operations
  *************************************************************/
 
-void i2c_send_uint8(i2cr_addr_t node,
+void i2c_send_uint8(i2c_addr_t node,
 		    uint8_t b,
-		    volatile i2cr_status_t *const status) {
+		    volatile i2c_status_t *const status) {
   i2cr_request_t r = {
     .rt = I2Csend_uint8,
     .node = node,
@@ -383,9 +383,9 @@ void i2c_send_uint8(i2cr_addr_t node,
 
 
 
-void i2c_receive_uint8(i2cr_addr_t node,
+void i2c_receive_uint8(i2c_addr_t node,
 		       uint8_t *const b,
-		       volatile i2cr_status_t *const status) {
+		       volatile i2c_status_t *const status) {
   i2cr_request_t r = {
     .rt = I2Creceive,
     .node = node,
@@ -401,12 +401,12 @@ void i2c_receive_uint8(i2cr_addr_t node,
  * Combined transmision operations
  *************************************************************/
 
-void i2c_sandr(i2cr_addr_t node,
-	        uint8_t *const  s_buffer,
-	        uint8_t s_length,
-	        uint8_t *const  r_buffer,
-	        uint8_t r_length,
-	        volatile i2cr_status_t *const status) {
+void i2c_sandr(i2c_addr_t node,
+	       uint8_t *const  s_buffer,
+	       uint8_t s_length,
+	       uint8_t *const  r_buffer,
+	       uint8_t r_length,
+	       volatile i2c_status_t *const status) {
   i2c_send(node, s_buffer, s_length, NULL);
   i2c_receive(node, r_buffer, r_length, status);
 }
