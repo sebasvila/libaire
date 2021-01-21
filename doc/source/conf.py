@@ -1,8 +1,17 @@
+import subprocess, os
+
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
+
+
+# -- Check if RDT build
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+
+
 
 # -- Path setup --------------------------------------------------------------
 
@@ -72,3 +81,8 @@ breathe_domain_by_extension = {
 
 
 html_theme = "classic"
+
+
+
+if read_the_docs_build:
+    subprocess.call('cd ../doxygen; doxygen doxygen.conf', shell=True)
