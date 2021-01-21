@@ -59,7 +59,7 @@ exclude_patterns = ['_build']
 #
 if read_the_docs_build:
     import sphinx_rtd_theme
-    html_theme = 'sphinx_rdt_theme'
+    html_theme = 'sphinx_rtd_theme'
     extensions.append(html_theme)
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 else:
