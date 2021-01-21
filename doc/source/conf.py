@@ -85,4 +85,7 @@ html_theme = "classic"
 
 
 if read_the_docs_build:
-    subprocess.call('cd ../doxygen; doxygen doxygen.conf', shell=True)
+    subprocess.call('cd ..; doxygen doxygen.conf', shell=True)
+    # Deactivated using rtd plantuml version as it looks quite old.
+    plantuml = 'java -Djava.awt.headless=true -jar /usr/share/plantuml/plantuml.jar'
+    #plantuml = 'java -Djava.awt.headless=true -jar {}'.format(local_plantuml_path)
