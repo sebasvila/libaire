@@ -1,2 +1,4 @@
 breathe
 sphinxcontrib-plantuml
+sphinx_rtd_theme
+

@@ -49,7 +49,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ['_build']
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -61,6 +61,7 @@ if read_the_docs_build:
     import sphinx_rtd_theme
     html_theme = 'sphinx_rdt_theme',
     extensions.append(html_theme)
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 else:
     html_theme = 'alabaster'
 
