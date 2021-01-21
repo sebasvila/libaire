@@ -6,6 +6,9 @@
 Welcome to libaire's documentation!
 ===================================
 
+An AVR C library on top of avr-libc that abstracts the internal
+devices of the AVR microcontroler in a protothreads-friendly way.
+
 .. toctree::
    :numbered:
    :maxdepth: 2

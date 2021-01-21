@@ -5,8 +5,8 @@ Introduction
 
 libAire is a bare C library for Arduino that abstracts the main
 hardware devices. There are many known modules and libraries for
-Arduino and the AVR microcontrolers. Why to design another one?
-These are the most salient reasons:
+Arduino and the AVR microcontrolers. Why to design another one?  These
+are the most salient reasons:
 
 1. Because many of them are written in C++ as a sequel of the
    preeminence of Arduino's IDE.
@@ -26,41 +26,56 @@ These are the most salient reasons:
    leverage the work that the library user should do.
 
 
+.. note::
+
+   This documentation is mainly written for the library user. It
+   deliberately avoids to exhibit the implementation details unless
+   necessary or particulary interesting.
+
+
 Libaire modules structure
 =========================
 
-Libaire is built as a set of interelated related modules. These are the
-modules and its main functionality.
+Libaire is built as a set of modules. Each module is devoted to a
+specific responsibility. Following, there is the modules list and its
+main objective.
 
 adc
-   Defines an abstraction of an analogic input channel.
+
+   Defines an abstraction of the AVR analogic/digital converter system.
 
 alert
+
    Defines an alarm mechanism that allows to abort the system while
    giving to the technical user a primary hint on the cause of
    halt. It's a last resource emergency exception handler.
 
 i2c
-   An abstraction of an i2c bus.
+
+   An abstraction of the AVR i2c bus that can be user in master send
+   and master receive modes.
 
 pin
-   An abstraction of a digital i/o pin.
 
-queue
-   A queue of bytes.
+   An abstraction of the AVR digital i/o pins.
 
 serial
-   An abstraction of a serial port.
+
+   An abstraction of the AVR serial port.
 
 switch
-   An abstraction of a switch.
+
+   An abstraction of a on/off or pushbutton switch device.
 
 ticker
-   A counter that ticks at a constant frequency.
+
+   A hardware clock abstraction that offers to the library user a counter
+   that ticks continuously at a constant frequency.
 
 timer
-   An abstraction of a timer that allows to asyncronously call a
-   function in the future.
+
+   A hardware clock abstraction that offers to the library user a timer that
+   allows to asyncronously call a function in the future.
 
 
 
@@ -68,7 +83,7 @@ Microcontroller, platform and devices
 =====================================
 
 On this documentation we use the following terms with the defined
-sense:
+meaning:
 
 microcontroller family
 
@@ -84,7 +99,7 @@ platform
 
    An circuit that surrounds a microcontroller and renders it usable
    to some tasks. Usually in the form of a printed circuit. For
-   instance Arduino ONE.
+   instance Arduino UNO.
 
 device
 
@@ -96,15 +111,15 @@ device
 Libaire hardware dependencies
 -----------------------------
 
-Libaire depends mainly on the model of AVR microcontroler family
-because of the dependencies on microcontroler peripheral devices: A/D
-conversor, GPIO ports, timers, etc.
+Libaire implementation depends on the model of AVR microcontroler
+family because of the singularities of each family peripheral devices:
+A/D conversor, GPIO ports, timers, etc.
 
 However, as most of users are on Arduino comunity, we choosed to make
 libaire to depend on an Arduino platform. The actual Arduino platform
 also determines the model of AVR microcontroler.
 
-The default platform is Arduino ONE.
+The default platform is Arduino UNO.
 
 
 
@@ -114,5 +129,7 @@ Relationship between libaire and libdev
 libaire contains the software that is platform dependent.
 
 libdev contains the software that is device dependent.
+
+
 
 

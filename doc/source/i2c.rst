@@ -121,11 +121,11 @@ Status value
 ------------
 
 Transfer operations in this module have an out parameter of type
-i2cr_status_t that encodes the current state of the transfer. The
+i2c_status_t that encodes the current state of the transfer. The
 value of this should be considered volatile as it is asyncronouly
 changed while the operation is alive.
 
-.. doxygenenum:: i2cr_status_t
+.. doxygenenum:: i2c_status_t
 
 The distinct values should be interpreted following this table:
 
@@ -240,7 +240,7 @@ printed over the serial port.
 
    int main(){
        uint8_t buf[10];
-       volatile i2cr_status_t st;
+       volatile i2c_status_t st;
 
        serial_setup();
        i2c_setup();
