@@ -4,12 +4,15 @@
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include "queue.h"
+#include "imgr.h"
 #include "serial.h"
+
+/* init manager */
+INIT_MGR(serial_mgr);
 
 #define NUM (F_CPU/16)
 #define BAUDRATE_L(x) UINT8_C((NUM/x-1)      & 0xff)
 #define BAUDRATE_H(x) UINT8_C((NUM/x-1) >> 8 & 0x0f)
-
 
 /*
  * Input and output queues
@@ -121,62 +124,67 @@ void serial_write_ui(unsigned int i) {
 
 
 void serial_open(void) {
-  #ifdef _SER_RX_
-  // Enable reception
-  UCSR0B |= _BV(RXEN0);
-  // Enable rx interrupts
-  UCSR0B |= _BV(RXCIE0);
-  #endif
-  #ifdef _SER_TX_
-  // Enable transmision
-  UCSR0B |=  _BV(TXEN0);
-  #endif
-
+  WITH_OPEN_MGR(serial_mgr) {
+#ifdef _SER_RX_
+    // Enable reception
+    UCSR0B |= _BV(RXEN0);
+    // Enable rx interrupts
+    UCSR0B |= _BV(RXCIE0);
+#endif
+#ifdef _SER_TX_
+    // Enable transmision
+    UCSR0B |=  _BV(TXEN0);
+#endif
+  }
 }
 
 
 void serial_close(void) {
-  #ifdef _SER_TX_
-  /* wait last byte sent 
-   * waits that tx-isr disables "data register empty" interrupt:
-   * this means that tx queue emptied and last char was sent 
-   */
-  while (UCSR0B & _BV(UDRIE0));
-  /* disable transmision*/
-  UCSR0B &= ~_BV(TXEN0);  
-  #endif
-  #ifdef _SER_RX_
-  /* disable receive interrupts */
-  UCSR0B &= ~_BV(RXCIE0);  
-  /* disable reception */
-  UCSR0B &= ~_BV(RXEN0);
-  #endif
+  WITH_CLOSE_MGR(serial_mgr) {
+#ifdef _SER_TX_
+    /* wait last byte sent 
+     * waits that tx-isr disables "data register empty" interrupt:
+     * this means that tx queue emptied and last char was sent 
+     */
+    while (UCSR0B & _BV(UDRIE0));
+    /* disable transmision*/
+    UCSR0B &= ~_BV(TXEN0);  
+#endif
+#ifdef _SER_RX_
+    /* disable receive interrupts */
+    UCSR0B &= ~_BV(RXCIE0);  
+    /* disable reception */
+    UCSR0B &= ~_BV(RXEN0);
+#endif
+  }
 }
 
 
 /* Set up the module. Assume that interrupts are disabled */
 void serial_setup(void) {
-  // Initialize the queues
-  #ifdef _SER_RX_
-  queue_empty(&inq);
-  #endif
-  #ifdef _SER_TX_
-  queue_empty(&outq);
-  #endif
+  WITH_SETUP_MGR(serial_mgr) {
+    // Initialize the queues
+#ifdef _SER_RX_
+    queue_empty(&inq);
+#endif
+#ifdef _SER_TX_
+    queue_empty(&outq);
+#endif
 
-  // Initialize the UART0 According to ¶19.5 we must wait last
-  // transmision finishes and all data received: ignoring it.
-  // According to ¶19.5 interrupts must be disabled and restored at
-  // end: assume setup is always called when interrupts disabled.
-  UBRR0H = BAUDRATE_H(9600);
-  UBRR0L = BAUDRATE_L(9600);
-  // set normal baud rate 
-  UCSR0A = UINT8_C(0);
-  UCSR0C = 
-    (_BV(UCSZ01)   | _BV(UCSZ00)) &   // 8 bit frame
-    ~_BV(UMSEL01) & ~_BV(UMSEL00) &   // asincronous mode
-    ~_BV(UPM01)   & ~_BV(UPM00)   &   // no parity
-    ~_BV(USBS0)   ;                   // 1 stop bit
+    // Initialize the UART0 According to ¶19.5 we must wait last
+    // transmision finishes and all data received: ignoring it.
+    // According to ¶19.5 interrupts must be disabled and restored at
+    // end: assume setup is always called when interrupts disabled.
+    UBRR0H = BAUDRATE_H(9600);
+    UBRR0L = BAUDRATE_L(9600);
+    // set normal baud rate 
+    UCSR0A = UINT8_C(0);
+    UCSR0C = 
+      (_BV(UCSZ01)   | _BV(UCSZ00)) &   // 8 bit frame
+      ~_BV(UMSEL01) & ~_BV(UMSEL00) &   // asincronous mode
+      ~_BV(UPM01)   & ~_BV(UPM00)   &   // no parity
+      ~_BV(USBS0)   ;                   // 1 stop bit
+  }
 }
 
 

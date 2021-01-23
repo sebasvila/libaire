@@ -16,10 +16,11 @@ DEVICE=/dev/ttyACM0
 PRIVATE_HEADERS = queue.h i2cq.h i2cr.h
 
 # public library headers (required by the library end user)
-PUBLIC_HEADERS  = adc.h ticker.h pin.h switch.h timer.h alert.h serial.h i2c.h
+PUBLIC_HEADERS  = adc.h ticker.h pin.h switch.h timer.h alert.h \
+                  serial.h i2c.h imgr.h
 
 # library modules (object files in the library; file suffix not needed)
-SRC_MODS = queue i2cq adc ticker pin switch timer alert serial i2c
+SRC_MODS = queue i2cq adc ticker pin switch timer alert serial i2c imgr
 
 # library tests/examples
 SRC_TESTS = test_timer test_timer2 \

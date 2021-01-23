@@ -10,7 +10,10 @@
 #include <avr/interrupt.h>
 #include "alert.h"
 #include "adc.h"
+#include "imgr.h"
 
+/* init manager */
+INIT_MGR(adc_mgr);
 
 /* number of samples in oversampling (2's power) */
 #define N_SAMPLES (UINT8_C(1<<2))
@@ -197,34 +200,36 @@ ISR(ADC_vect) {
 
 
 void adc_setup(void) {
-  /* Registre DIDR0 s'ha de usar en els canals emprats */
-  /* Mes estable 3.3V que els Vcc per que alimentacio no estable */
-  /* potenciometre usa Vcc -> com canviar-ho per canal? */
+  WITH_SETUP_MGR(adc_mgr) {
+    /* Registre DIDR0 s'ha de usar en els canals emprats */
+    /* Mes estable 3.3V que els Vcc per que alimentacio no estable */
+    /* potenciometre usa Vcc -> com canviar-ho per canal? */
   
-  /* disable power reduction for ADC */
-  PRR &= ~_BV(PRADC);
-  /* ADC Enable and prescaler of 64
-   * 16000000/32 = 500000 kHz. 
-   * typical conversion time 13 cycles = 13*500000^-1 = 26 us
-   */
-  ADCSRA = _BV(ADPS2) | _BV(ADPS0) ;
-  /* want only 8 bits resolution: shift reading left */
-  ADMUX = _BV(ADLAR);
-  /* ADC enable */
-  ADCSRA |= _BV(ADEN);
-  /* set trigger source to interrupt flag (for oversampling) */
-  ADCSRB &= ~(_BV(ADTS2) | _BV(ADTS1) | _BV(ADTS0));
-  /* set module state: last adc_channel converted is none */
-  last_channel_used = 0x0;
-  /* force and discard very first read.  This sets up
-   * `last_channel_used`, and waits for first unusually long reading
-   * time (25 cycles, pp. 208 datasheet).  Force to select an
-   * yet unused channel and reference voltage.
-   * As a lateral effect it sets up the `last_channel_used` private
-   * module attribute.
-   * use internal channel to avoid potential conflicts.
-   */
-  (void)adc_prep_start_get(C_ADC(ADC_CHANNEL_11V,Int11));
+    /* disable power reduction for ADC */
+    PRR &= ~_BV(PRADC);
+    /* ADC Enable and prescaler of 64
+     * 16000000/32 = 500000 kHz. 
+     * typical conversion time 13 cycles = 13*500000^-1 = 26 us
+     */
+    ADCSRA = _BV(ADPS2) | _BV(ADPS0) ;
+    /* want only 8 bits resolution: shift reading left */
+    ADMUX = _BV(ADLAR);
+    /* ADC enable */
+    ADCSRA |= _BV(ADEN);
+    /* set trigger source to interrupt flag (for oversampling) */
+    ADCSRB &= ~(_BV(ADTS2) | _BV(ADTS1) | _BV(ADTS0));
+    /* set module state: last adc_channel converted is none */
+    last_channel_used = 0x0;
+    /* force and discard very first read.  This sets up
+     * `last_channel_used`, and waits for first unusually long reading
+     * time (25 cycles, pp. 208 datasheet).  Force to select an
+     * yet unused channel and reference voltage.
+     * As a lateral effect it sets up the `last_channel_used` private
+     * module attribute.
+     * use internal channel to avoid potential conflicts.
+     */
+    (void)adc_prep_start_get(C_ADC(ADC_CHANNEL_11V,Int11));
+  }
 }
 
 

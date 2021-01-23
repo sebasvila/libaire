@@ -3,28 +3,31 @@
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include "timer.h"
+#include "imgr.h"
 
+/* init manager */
+INIT_MGR(timer_mgr);
 
 static timer_action_t *action;
 
-
-
 void timer_setup(timer_freq_t s) {
-  // Configure timer to mode CTC, no output, and no clock
-  TCCR1A = 0;
-  TCCR1B = _BV(WGM12); 
-  TCCR1C = 0;
-  // No interrupts from timer
-  TIMSK1 = 0;
-  // Select 's' prescaler and start counting if not 0
-  TCCR1B |= (s & 0x07);
+  WITH_SETUP_MGR(timer_mgr) {
+    // Configure timer to mode CTC, no output, and no clock
+    TCCR1A = 0;
+    TCCR1B = _BV(WGM12); 
+    TCCR1C = 0;
+    // No interrupts from timer
+    TIMSK1 = 0;
+    // Select 's' prescaler and start counting if not 0
+    TCCR1B |= (s & 0x07);
+  }
 }
 
 
 extern void timer_arm_once(uint16_t c);
 
 
-extern void timer_disarm(void) {
+void timer_disarm(void) {
   // Disable interrupts
   TIMSK1 = 0;
 }

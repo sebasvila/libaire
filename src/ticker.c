@@ -2,21 +2,27 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
+#include "imgr.h"
 #include "ticker.h"
 
 /* Implemented on the 8.bit TIMER2 */
 
+
+/* init manager */
+INIT_MGR(ticker_mgr);
+
 static volatile uint16_t ticks;
 
-
 void ticker_setup(void) {
-  // Configure timer to mode CTC, no output, and no clock
-  TCCR2A = _BV(WGM21);
-  TCCR2B = 0;
-  // No interrupts from timer
-  TIMSK2 = 0;
-  // Count
-  OCR2A = UINT8_C(156);
+  WITH_SETUP_MGR(ticker_mgr) {
+    // Configure timer to mode CTC, no output, and no clock
+    TCCR2A = _BV(WGM21);
+    TCCR2B = 0;
+    // No interrupts from timer
+    TIMSK2 = 0;
+    // Count
+    OCR2A = UINT8_C(156);
+  }
 }
 
 

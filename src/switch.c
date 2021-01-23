@@ -3,8 +3,11 @@
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include <util/delay.h>
+#include "imgr.h"
 #include "switch.h"
 
+/* init manager */
+INIT_MGR(switch_mgr);
 
 /* max allowed number of switches */
 #define MAX_SWITCH 8
@@ -206,6 +209,8 @@ void switch_poll_wait(switch_t i) {
 
 
 void switch_setup(void) {
-  empty_table();
-  timer_setup();
+  WITH_SETUP_MGR(switch_mgr) {
+    empty_table();
+    timer_setup();
+  }
 }

@@ -4,10 +4,13 @@
 #include <avr/interrupt.h>
 #include <util/twi.h>
 #include <util/atomic.h>
+#include "imgr.h"
 #include "i2cr.h"
 #include "i2cq.h"
 #include "i2c.h"
 
+/* init manager */
+INIT_MGR(i2c_imgr);
 
 #define TW_GO_OPERATIVE 0xff  // special automata event
 #define TWI_FREQ 100000UL     // i2c bus frequency
@@ -275,29 +278,35 @@ ISR(TWI_vect) {
  *************************************************************/
 
 void i2c_setup(void) {
-  // Initialize I2C prescaler and bit rate
-  TWSR &= ~(1<<TWPS0) & ~(1<<TWPS1);
+  WITH_SETUP_MGR(i2c_imgr) {
+    // Initialize I2C prescaler and bit rate
+    TWSR &= ~(1<<TWPS0) & ~(1<<TWPS1);
   
-  /* 
-   * I2C bit rate formula from atmega128 manual pg 204
-   * SCL Frequency = CPU Clock Frequency / (16 + (2 * TWBR))
-   * note: TWBR should be 10 or higher for master mode.
-   * It is 72 for a 16MHz clocked board with 100kHz TWI 
-   */
-  TWBR = ((F_CPU / TWI_FREQ) - 16) / 2;
+    /* 
+     * I2C bit rate formula from atmega128 manual pg 204
+     * SCL Frequency = CPU Clock Frequency / (16 + (2 * TWBR))
+     * note: TWBR should be 10 or higher for master mode.
+     * It is 72 for a 16MHz clocked board with 100kHz TWI 
+     */
+    TWBR = ((F_CPU / TWI_FREQ) - 16) / 2;
+  }
 }
 
 
 void i2c_open(void) {
-  i2cq_empty(&requests);
-  ida_state = Idle;
-  TWCR = _BV(TWEN);  // Enable I2C module
+  WITH_OPEN_MGR(i2c_imgr) {
+    i2cq_empty(&requests);
+    ida_state = Idle;
+    TWCR = _BV(TWEN);  // Enable I2C module
+  }
 }
 
 
 void i2c_close(void) {
-  while(ida_state != Idle);           // Wait till queue empty
-  TWCR = 0;                           // Disable I2C module
+  WITH_CLOSE_MGR(i2c_imgr) {
+    while(ida_state != Idle);  // Wait till queue empty
+    TWCR = 0;                  // Disable I2C module
+  }
 }
 
 
