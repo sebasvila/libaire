@@ -121,6 +121,66 @@ void i2c_receive(i2c_addr_t node,
  * Single byte send/receive
  ******************************************************************/
 
+
+/**
+ * @brief Asyncronously sends two bytes to an i2c node.
+ *
+ * Two bytes `b1` and `b0` are sent (asyncronously) to `node`.
+ * `*status` contains the current state of the request:
+ *  - Running: while request not scheduled
+ *  - Success: when request ended satifactorily
+ *  - Other values: when request ended with an error condition.
+ *
+ * `status` can be queried to know the request processing state. If
+ * the i2d driver cannot receive more requests, the call blocks until
+ * this request can be accepted.
+ * 
+ * @param node:   The I2C byte address of the sender.
+ * @param b0:     The first  uint8_t value to be sent.
+ * @param b1:     The second uint8_t value to be sent.
+ * @param status: A pointer to a `volatile i2c_status_t` variable 
+ *                that contains the current state of the request. If
+ *                NULL, no status will be reported (not recommended).
+ * @pre length > 0
+ * @post *status == Running if status != NULL
+ */
+void i2c_send_2uint8(i2c_addr_t node,
+		     uint8_t b1, uint8_t b0,
+		     volatile i2c_status_t *const status);
+
+/**
+ * @brief Asyncronously sends a word to an i2c node.
+ *
+ * A word `b` is sent (asyncronously) to `node`. The parameter
+ * `bigendian` determines the order in which bytes are sent.
+ * `*status` contains the current state of the request:
+ *  - Running: while request not scheduled
+ *  - Success: when request ended satifactorily
+ *  - Other values: when request ended with an error condition.
+ *
+ * `status` can be queried to know the request processing state. If
+ * the i2d driver cannot receive more requests, the call blocks until
+ * this request can be accepted.
+ * 
+ * @param node:   The I2C byte address of the sender.
+ * @param b:      The uint16_t value to be sent.
+ * @param bigendian: True iff must be sent in big endian order; else it 
+ *                is sent en little endian order.
+ * @param status: A pointer to a `volatile i2c_status_t` variable 
+ *                that contains the current state of the request. If
+ *                NULL, no status will be reported (not recommended).
+ * @pre length > 0
+ * @post *status == Running if status != NULL
+ */
+inline void i2c_send_uint16(i2c_addr_t node,
+			    uint16_t b, bool bigendian,
+			    volatile i2c_status_t *const status) {
+  if (bigendian) 
+    i2c_send_2uint8(node, b >> 8, b & 0xff, status);
+  else
+    i2c_send_2uint8(node, b & 0xff, b >> 8, status);
+}
+
 /**
  * @brief Asyncronously sends a single byte to an i2c node.
  *

@@ -190,6 +190,8 @@ static void ida_next(uint8_t e) {
       // Slave contacted, let's talk with him
       if (current_req->rt == I2Csend){
         throw_byte(current_req->data.ue.buffer[i++]);
+      } else if (current_req->rt == I2Csend_2uint8){
+        throw_byte(current_req->data.local_2byte[i++]);
       } else if (current_req->rt == I2Csend_uint8){
         throw_byte(current_req->data.local_byte);
         i++;
@@ -211,6 +213,10 @@ static void ida_next(uint8_t e) {
 	  i < current_req->data.ue.length) {
         // Send another byte and remain in the same state
         throw_byte(current_req->data.ue.buffer[i++]);
+      } else if (current_req->rt != I2Csend_2uint8 &&
+	  i < 2) {
+        // Send another byte and remain in the same state
+        throw_byte(current_req->data.local_2byte[i++]);
       } else {
         // No more data to send
         fetch_or_idle(Success);
@@ -366,6 +372,20 @@ void i2c_receive(i2c_addr_t node,
 /*************************************************************
  * Byte transmision operations
  *************************************************************/
+
+void i2c_send_2uint8(i2c_addr_t node,
+		     uint8_t b1, uint8_t b0,
+		     volatile i2c_status_t *const status) {
+  i2cr_request_t r = {
+    .rt = I2Csend_2uint8,
+    .node = node,
+    .status = status,
+    .data.local_2byte = {b1,b0}
+  };
+  
+  put_request(&r);
+}
+
 
 void i2c_send_uint8(i2c_addr_t node,
 		    uint8_t b,

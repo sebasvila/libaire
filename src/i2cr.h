@@ -13,7 +13,8 @@
 typedef enum {
   I2Csend, 
   I2Creceive, 
-  I2Csend_uint8       //!< Defines a single-byte send request type
+  I2Csend_uint8,  // Single-byte send request type
+  I2Csend_2uint8, // Double-byte send request type
 } i2cr_type_t;
 
 /* 
@@ -24,8 +25,12 @@ typedef struct {
   i2c_addr_t node;
   volatile i2c_status_t *status;
   union {
-    struct {uint8_t *buffer; uint8_t length;} ue; // buffer in user space
-    uint8_t local_byte;                           // locally stored byte
+    /* buffer in user space */
+    struct {uint8_t *buffer; uint8_t length;} ue;
+    /* locally stored double byte */
+    uint8_t local_2byte[2];
+    /* locally stored single byte */
+    uint8_t local_byte;                           
   } data;
 } i2cr_request_t;
 
