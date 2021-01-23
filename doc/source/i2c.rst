@@ -90,16 +90,25 @@ where data to be sent resides. This buffer:
 Byte transfer operations
 ------------------------
 
-These are operations intended to transfer a single byte to/from a
+These are operations intended to transfer one or two bytes to/from a
 given slave in the bus.
 
-The send operation doesn't require a buffer and data to be sent is
-internally stored by the module. This allows a smoother use.
+The send operations doesn't require a buffer and data to be sent is
+internally stored by the module. This allows for a smoother use.
 
 .. doxygenfunction:: i2c_send_uint8
 
-.. doxygenfunction:: i2c_receive_uint8
+.. doxygenfunction:: i2c_send_2uint8
 
+The i2c_send_uint16() function sends a word. A provision is made to
+allow the user to choose the byte order in which the word is sent.
+
+.. doxygenfunction:: i2c_send_uint16
+
+The module also provides a function to receive a byte as defined below.		     
+
+.. doxygenfunction:: i2c_receive_uint8
+		     
 
 
 Canned operations
@@ -126,6 +135,7 @@ value of this should be considered volatile as it is asyncronouly
 changed while the operation is alive.
 
 .. doxygenenum:: i2c_status_t
+   :outline:
 
 The distinct values should be interpreted following this table:
 
