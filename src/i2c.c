@@ -209,11 +209,11 @@ static void ida_next(uint8_t e) {
   case TxData:
     if (e == TW_MT_DATA_ACK) {
       // Data sent ok
-      if (current_req->rt != I2Csend_uint8 &&
+      if (current_req->rt == I2Csend &&
 	  i < current_req->data.ue.length) {
         // Send another byte and remain in the same state
         throw_byte(current_req->data.ue.buffer[i++]);
-      } else if (current_req->rt != I2Csend_2uint8 &&
+      } else if (current_req->rt == I2Csend_2uint8 &&
 	  i < 2) {
         // Send another byte and remain in the same state
         throw_byte(current_req->data.local_2byte[i++]);
