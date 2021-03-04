@@ -326,8 +326,8 @@ static void put_request(const i2cr_request_t *const r) {
 
   // protects a queue modification using some operation of
   // this module from an ISR.
+  while (i2cq_is_full(&requests));
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    while (i2cq_is_full(&requests));
     i2cq_enqueue(&requests, r);
 
     if (ida_state == Idle){
